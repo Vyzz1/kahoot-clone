@@ -8,3 +8,15 @@ declare namespace Express {
     user?: AuthenticatedUser;
   }
 }
+interface CommonLoginResponse {
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    _id: string;
+    email: string;
+    role: string;
+    fullName: string;
+    avatar?: string | null;
+    isActive: boolean;
+  };
+}
