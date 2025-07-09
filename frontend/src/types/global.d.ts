@@ -15,7 +15,7 @@ declare type User = {
   createdAt: string;
   updatedAt: string;
   lastLogin: string;
-  isActive: boolean;
+  isBanned: boolean;
   provider: string;
   providerId: string;
 };

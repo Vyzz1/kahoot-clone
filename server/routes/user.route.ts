@@ -2,7 +2,11 @@ import { Router } from "express";
 import validateJWT from "../middlewares/validate-jwt";
 import validateRole from "../middlewares/validate-role";
 import validateSchema from "../middlewares/validate=schema";
-import { paginationUserSchema, userSchema } from "../schemas/user.schema";
+import {
+  banUserSchema,
+  paginationUserSchema,
+  userSchema,
+} from "../schemas/user.schema";
 import userController from "../controllers/user.controller";
 
 const userRouter = Router();
@@ -28,6 +32,13 @@ userRouter.put(
   validateAdmin,
   validateSchema(userSchema, "body"),
   userController.editUser
+);
+
+userRouter.patch(
+  "/:id/ban",
+  validateAdmin,
+  validateSchema(banUserSchema),
+  userController.banUser
 );
 
 userRouter.delete("/:id", validateAdmin, userController.deleteUser);

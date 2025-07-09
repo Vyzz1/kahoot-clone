@@ -1,12 +1,26 @@
 import DeleteConfirm from "@/components/delete-confirm";
 import { Badge, Table, Tooltip, type TableProps } from "antd";
 import { format } from "date-fns";
+import UserForm from "./user-form";
+import BanUser from "./ban-user";
+import { cn, getDefaultSorter } from "@/lib/utils";
+import { useUserFilter } from "../_hooks/useUserFilter";
 
 interface UserTableProps {
   users: Pagination<User>;
+  isLoading?: boolean;
 }
 
-export default function UserTable({ users }: UserTableProps) {
+export default function UserTable({ users, isLoading }: UserTableProps) {
+  const {
+    providers,
+    statuses,
+    sortBy,
+    sortOrder,
+
+    setFilters,
+  } = useUserFilter();
+
   const columns: TableProps<User>["columns"] = [
     {
       key: "user",
@@ -22,8 +36,20 @@ export default function UserTable({ users }: UserTableProps) {
             className="w-12 h-12 rounded-full object-cover flex-shrink-0"
           />
           <div className="flex flex-col">
-            <span className="font-medium text-gray-900">{record.fullName}</span>
-            <span className="text-sm text-gray-500">{record.email}</span>
+            <span
+              className={cn("font-medium text-gray-900 ", {
+                " text-red-800  line-through ": record.isBanned,
+              })}
+            >
+              {record.fullName}
+            </span>
+            <span
+              className={cn("text-sm text-gray-500", {
+                " text-red-500  line-through ": record.isBanned,
+              })}
+            >
+              {record.email}
+            </span>
           </div>
         </div>
       ),
@@ -37,32 +63,67 @@ export default function UserTable({ users }: UserTableProps) {
           <span className="capitalize">{provider}</span>
         </Tooltip>
       ),
+      filters: [
+        { text: "Google", value: "google" },
+        { text: "Facebook", value: "facebook" },
+        { text: "Email", value: "email" },
+      ],
+      filteredValue: providers,
     },
     {
       key: "createdAt",
       title: "Created At",
       dataIndex: "createdAt",
+      sorter: true,
+
       render: (createdAt) => format(new Date(createdAt), "PPP"),
+
+      ...{
+        ...getDefaultSorter({
+          refField: sortBy,
+          fieldName: "createdAt",
+          sortOrder: sortOrder,
+        }),
+      },
     },
     {
       key: "lastLogin",
       title: "Last Login",
       dataIndex: "lastLogin",
+      sorter: true,
       render: (lastLogin) => {
         if (!lastLogin) return "Never";
         return format(new Date(lastLogin), "PPPpp");
       },
+      ...{
+        ...getDefaultSorter({
+          refField: sortBy,
+          fieldName: "lastLogin",
+          sortOrder: sortOrder,
+        }),
+      },
     },
     {
-      key: "isActive",
+      key: "isBanned",
       title: "Status",
-      dataIndex: "isActive",
-      render: (isActive) => (
+      dataIndex: "isBanned",
+      render: (isBanned) => (
         <Badge
-          status={isActive ? "success" : "error"}
-          text={isActive ? "Active" : "Inactive"}
+          status={isBanned ? "success" : "error"}
+          text={!isBanned ? "Active" : "Banned"}
         />
       ),
+      filters: [
+        {
+          text: "Active",
+          value: false,
+        },
+        {
+          text: "Banned",
+          value: true,
+        },
+      ],
+      filteredValue: statuses,
     },
 
     {
@@ -70,29 +131,52 @@ export default function UserTable({ users }: UserTableProps) {
       title: "Actions",
       render: (_, record) => (
         <div className="flex items-center gap-2">
-          <Tooltip title="Edit User">
-            <span className="cursor-pointer text-blue-500 hover:text-blue-700">
-              Edit
-            </span>
-          </Tooltip>
+          <UserForm isEdit initialValues={record} />
           <DeleteConfirm
             term={` ${record.fullName}`}
             queryKey={["/users/list"]}
             endpoint={`/users/${record._id}`}
             onDelete={() => {}}
-          ></DeleteConfirm>
+          />
+          <BanUser isBanned={record.isBanned} id={record._id.toString()} />
         </div>
       ),
     },
   ];
 
+  const onChange: TableProps<User>["onChange"] = (
+    pagination,
+    filters,
+    sorter
+  ) => {
+    console.log("pagination", pagination);
+    console.log("filters", filters);
+    console.log("sorter", sorter);
+
+    const sortInfo = Array.isArray(sorter) ? sorter[0] : sorter;
+    const sortDirection = sortInfo.order;
+
+    setFilters({
+      sortBy: sortInfo.field as keyof User,
+      sortOrder: sortDirection as "ascend" | "descend",
+      pageSize: pagination.pageSize,
+      currentPage: pagination.current,
+      statuses: filters.isBanned as string[],
+      providers: filters.provider as string[],
+    });
+  };
+
   return (
     <Table<User>
       rowKey={(record) => record._id.toString()}
       columns={columns}
-      dataSource={users.content}
+      onChange={onChange}
+      loading={isLoading}
+      dataSource={users?.content || []}
       pagination={{
-        total: users.totalCount,
+        total: users?.totalCount,
+        current: users?.currentPage,
+        pageSize: users?.pageSize,
       }}
     />
   );

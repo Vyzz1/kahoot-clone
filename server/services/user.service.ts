@@ -5,26 +5,26 @@ import {
 } from "../error/customError";
 import User, { UserDocument } from "../models/user.model";
 import { PaginationUserRequest, UserRequest } from "../schemas/user.schema";
-
+import bcrypt from "bcrypt";
 class UserService {
   async getAllUsers(
     request: PaginationUserRequest
   ): Promise<PagedResult<UserDocument>> {
     let {
       pageSize = 10,
-      currentPage = 0,
+      currentPage = 1,
       sortBy = "createdAt",
       sortOrder = "asc",
       search,
       providers,
-      roles,
+      statuses,
     } = request;
 
-    const skip = currentPage * pageSize;
+    const skip = (currentPage - 1) * pageSize;
 
-    console.log("Skip:", skip);
-
-    const query: any = {};
+    const query: any = {
+      role: { $ne: "admin" },
+    };
 
     if (search) {
       query.$or = [
@@ -41,16 +41,16 @@ class UserService {
       query.provider = { $in: providers };
     }
 
-    if (typeof roles === "string") {
-      roles = [roles];
+    if (typeof statuses === "string") {
+      statuses = [statuses];
     }
 
-    if (roles && roles.length > 0) {
-      query.role = { $in: roles, $ne: "admin" };
+    if (statuses) {
+      query.isBanned = { $in: statuses };
     }
 
     const sort: any = {};
-    sort[sortBy] = sortOrder === "asc" ? 1 : -1;
+    sort[sortBy] = sortOrder === "ascend" ? 1 : -1;
 
     const totalCount = await User.countDocuments(query);
 
@@ -71,21 +71,35 @@ class UserService {
       throw new DuplicateDocumentError("User with this email already exists");
     }
 
+    if (!userData.password) {
+      throw new Error("Password is required");
+    }
+    const password = bcrypt.hashSync(userData.password!, 10);
+
     const newUser = await User.create({
       ...userData,
+      password,
       provider: "local",
       providerId: email,
     });
     return newUser;
   }
 
-  async editUser(email: string, userData: UserRequest): Promise<UserDocument> {
-    const user = await User.findByEmail(email);
+  async editUser(id: string, userData: UserRequest): Promise<UserDocument> {
+    const user = await User.findById(id).exec();
     if (!user) {
       throw new DocumentNotFoundError("User not found");
     }
 
-    Object.assign(user, userData);
+    const { email, ...updateData } = userData;
+
+    if (updateData.password) {
+      console.log("Updating password for user:", id);
+      const password = bcrypt.hashSync(updateData.password, 10);
+      updateData.password = password;
+    }
+
+    Object.assign(user, updateData);
     await user.save();
     return user;
   }
@@ -95,6 +109,16 @@ class UserService {
     if (!user) {
       throw new DocumentNotFoundError("User not found");
     }
+  }
+
+  async banUser(id: string, isBanned: boolean): Promise<void> {
+    const user = await User.findById(id);
+    if (!user) {
+      throw new DocumentNotFoundError("User not found");
+    }
+
+    user.isBanned = isBanned;
+    await user.save();
   }
 }
 

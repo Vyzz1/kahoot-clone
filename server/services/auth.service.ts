@@ -1,4 +1,4 @@
-import { DuplicateDocumentError } from "../error/customError";
+import { DuplicateDocumentError, ForbiddenError } from "../error/customError";
 import User from "../models/user.model";
 import redis from "../redis";
 import { LoginRequest, RegisterRequest } from "../schemas/auth.schema";
@@ -38,6 +38,10 @@ class AuthService {
       throw new DuplicateDocumentError("User not found with this email");
     }
 
+    if (user.isBanned) {
+      throw new ForbiddenError("User is banned");
+    }
+
     const isPasswordValid = bcrypt.compareSync(password, user.password || "");
 
     if (!isPasswordValid) {
@@ -57,7 +61,6 @@ class AuthService {
         role: user.role,
         fullName: user.fullName,
         avatar: user.avatar || null,
-        isActive: user.isActive,
       },
     };
   }
@@ -92,7 +95,6 @@ class AuthService {
         role: newUser.role,
         fullName: newUser.fullName,
         avatar: newUser.avatar || null,
-        isActive: newUser.isActive,
       },
     };
   }

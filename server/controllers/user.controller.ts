@@ -42,6 +42,20 @@ class UserController {
 
     res.status(NO_CONTENT).send();
   }
+
+  async banUser(
+    request: TypedRequest<{
+      TParams: { id: string };
+      TBody: { isBanned: boolean };
+    }>,
+    res: Response
+  ) {
+    const { id } = request.params;
+    const { isBanned } = request.body;
+    await userService.banUser(id, isBanned);
+
+    res.status(NO_CONTENT).send();
+  }
 }
 
 export default new UserController();

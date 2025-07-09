@@ -1,15 +1,17 @@
-import { useAuth } from "@/hooks/useAuth";
 import useFetchData from "@/hooks/useFetchData";
 import Title from "antd/es/typography/Title";
 import UserTable from "./_components/user-table";
+import { Button, Flex } from "antd";
+import UserForm from "./_components/user-form";
+import SearchUser from "./_components/search-user";
+import { useUserFilter } from "./_hooks/useUserFilter";
 
 export default function UserManagement() {
-  const { auth } = useAuth();
-
-  console.log(auth);
+  const { getParamsString, shouldResetFilters, deleteAllFilters } =
+    useUserFilter();
 
   const { data, isLoading, error } = useFetchData<Pagination<User>>(
-    "/users/list",
+    `/users/list?${getParamsString()}`,
     {
       type: "private",
     }
@@ -19,16 +21,28 @@ export default function UserManagement() {
     return <div>Error: {error.response?.data.message || "Error"}</div>;
   }
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <section className="px-4 py-6 ">
       <div className="max-w-7xl mx-auto">
-        <Title level={3}>User Management</Title>
-        <div className="my-12">
-          <UserTable users={data!} />
+        <Flex justify="space-between" align="center">
+          <Title level={3}>User Management</Title>
+          <UserForm isEdit={false} onSubmit={() => {}} />
+        </Flex>
+        <div className="my-12 !space-y-8">
+          <Flex>
+            <SearchUser />
+            {shouldResetFilters && (
+              <Button
+                size="small"
+                type="primary"
+                onClick={deleteAllFilters}
+                className="ml-4"
+              >
+                Reset Filters
+              </Button>
+            )}
+          </Flex>
+          <UserTable users={data!} isLoading={isLoading} />
         </div>
       </div>
     </section>

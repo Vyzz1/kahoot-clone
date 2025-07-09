@@ -37,9 +37,9 @@ const userSchema = new Schema(
 
       select: false,
     },
-    isActive: {
+    isBanned: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     lastLogin: {
       type: Date,

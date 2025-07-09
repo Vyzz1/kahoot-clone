@@ -17,6 +17,5 @@ interface CommonLoginResponse {
     role: string;
     fullName: string;
     avatar?: string | null;
-    isActive: boolean;
   };
 }
