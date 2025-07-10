@@ -6,7 +6,7 @@ import quizService from "../services/quiz.service";
 
 class QuizController {
   async createQuiz(req: TypedRequest<{ TBody: QuizRequest }>, res: Response) {
-    const quiz = await quizService.createQuiz(req.body, req.user!.id);
+    const quiz = await quizService.createQuiz(req.body, req.user!.userId);
     res.status(201).send(quiz);
   }
 
@@ -57,7 +57,7 @@ async getMyQuizzes(req: TypedRequest<{ TQuery: {
   const tagArray = typeof tags === "string" ? [tags] : tags;
 
   const result = await quizService.getQuizzesByUser(
-    req.user!.id,
+    req.user!.userId,
     search,
     +page,
     +pageSize,
