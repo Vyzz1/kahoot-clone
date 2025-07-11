@@ -8,6 +8,8 @@ import userRouter from "./routes/user.route";
 import errorHandler from "./middlewares/errorHandler";
 import authRouter from "./routes/auth.route";
 import corsHandler from "./config/corsHandler";
+import quizRouter from './routes/quiz.route';
+import questionRouter from './routes/question.route';
 
 dotenv.config();
 
@@ -25,6 +27,9 @@ app.use(express.json());
 app.use("/api/users", userRouter);
 
 app.use("/api/auth", authRouter);
+
+app.use("/api/quizzes", quizRouter);
+app.use("/api/questions", questionRouter);
 
 app.use(errorHandler);
 

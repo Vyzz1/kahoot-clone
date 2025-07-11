@@ -1,13 +1,11 @@
-// 📁 src/services/quiz.service.ts
 import Quiz from "../models/quiz.model";
 import Question from "../models/question.model";
 import { QuizRequest } from "../schemas/quiz.schema";
 import { DocumentNotFoundError } from "../error/customError";
-import { PagedResult } from "../config/paged-result";
 
 class QuizService {
-  async createQuiz(data: QuizRequest, ownerId: string) {
-    return await Quiz.create({ ...data, owner: ownerId });
+  async createQuiz(data: QuizRequest, userId: string) {
+    return await Quiz.create({ ...data, user: userId });
   }
 
   async getQuizById(id: string) {
@@ -64,14 +62,14 @@ class QuizService {
   }
 
   async getQuizzesByUser(
-    ownerId: string,
+    userId: string,
     search?: string,
     page = 0,
     pageSize = 10,
     tags?: string[],
     questionType?: string
   ) {
-    const query: any = { owner: ownerId };
+    const query: any = { user: userId };
 
     if (search) {
       query.title = { $regex: search, $options: "i" };

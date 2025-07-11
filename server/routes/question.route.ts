@@ -3,7 +3,7 @@ import validateJWT from "../middlewares/validate-jwt";
 import validateSchema from "../middlewares/validate-schema";
 import { questionSchema } from "../schemas/question.schema";
 import questionController from "../controllers/question.controller";
-import { validateQuizOwnership } from "../middlewares/validate-quiz-ownership";
+import { validateQuizUsership } from "../middlewares/validate-quiz-usership";
 
 const questionRouter = Router();
 
@@ -11,20 +11,20 @@ questionRouter.post(
   "/",
   validateJWT,
   validateSchema(questionSchema),
-  validateQuizOwnership,
+  validateQuizUsership,
   questionController.createQuestion
 );
 questionRouter.put(
   "/:id",
   validateJWT,
   validateSchema(questionSchema),
-  validateQuizOwnership,
+  validateQuizUsership,
   questionController.updateQuestion
 );
 questionRouter.delete(
   "/:id",
   validateJWT,
-  validateQuizOwnership,
+  validateQuizUsership,
   questionController.deleteQuestion
 );
 

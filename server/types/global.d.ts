@@ -1,5 +1,5 @@
 declare interface AuthenticatedUser {
-  id: string;
+  userId: string;
   email: string;
   role: string;
 }

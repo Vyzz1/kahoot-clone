@@ -12,6 +12,10 @@ quizRouter.post(
   validateSchema(quizSchema),
   quizController.createQuiz
 );
+
+quizRouter.get("/public/list", quizController.getPublicQuizzes);
+quizRouter.get("/my/list", validateJWT, quizController.getMyQuizzes);
+
 quizRouter.get("/:id", validateJWT, quizController.getQuizById);
 quizRouter.put(
   "/:id",
@@ -20,8 +24,5 @@ quizRouter.put(
   quizController.updateQuiz
 );
 quizRouter.delete("/:id", validateJWT, quizController.deleteQuiz);
-
-quizRouter.get("/public/list", quizController.getPublicQuizzes);
-quizRouter.get("/my/list", validateJWT, quizController.getMyQuizzes);
 
 export default quizRouter;
