@@ -1,7 +1,7 @@
 import { Router } from "express";
 import validateJWT from "../middlewares/validate-jwt";
 import validateRole from "../middlewares/validate-role";
-import validateSchema from "../middlewares/validate=schema";
+import validateSchema from "../middlewares/validate-schema";
 import {
   banUserSchema,
   paginationUserSchema,

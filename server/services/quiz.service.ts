@@ -3,6 +3,7 @@ import Quiz from "../models/quiz.model";
 import Question from "../models/question.model";
 import { QuizRequest } from "../schemas/quiz.schema";
 import { DocumentNotFoundError } from "../error/customError";
+import { PagedResult } from "../config/paged-result";
 
 class QuizService {
   async createQuiz(data: QuizRequest, ownerId: string) {
@@ -28,85 +29,74 @@ class QuizService {
   }
 
   async getPublicQuizzes(
-  search?: string,
-  page = 0,
-  pageSize = 10,
-  tags?: string[],
-  questionType?: string
-) {
-  const query: any = { isPublic: true };
+    search?: string,
+    page = 0,
+    pageSize = 10,
+    tags?: string[],
+    questionType?: string
+  ) {
+    const query: any = { isPublic: true };
 
-  if (search) {
-    query.title = { $regex: search, $options: "i" };
+    if (search) {
+      query.title = { $regex: search, $options: "i" };
+    }
+
+    if (tags && tags.length > 0) {
+      query.tags = { $in: tags };
+    }
+
+    // Truy vấn nâng cao: chỉ lấy quiz có ít nhất 1 câu hỏi loại mong muốn
+    if (questionType) {
+      const matchingQuizIds = await Question.distinct("quiz", {
+        type: questionType,
+      });
+      query._id = { $in: matchingQuizIds };
+    }
+
+    const total = await Quiz.countDocuments(query);
+
+    const quizzes = await Quiz.find(query)
+      .skip(page * pageSize)
+      .limit(pageSize)
+      .sort({ createdAt: -1 });
+
+    return new PagedResult(quizzes, total, page, pageSize);
   }
 
-  if (tags && tags.length > 0) {
-    query.tags = { $in: tags };
+  async getQuizzesByUser(
+    ownerId: string,
+    search?: string,
+    page = 0,
+    pageSize = 10,
+    tags?: string[],
+    questionType?: string
+  ) {
+    const query: any = { owner: ownerId };
+
+    if (search) {
+      query.title = { $regex: search, $options: "i" };
+    }
+
+    if (tags && tags.length > 0) {
+      query.tags = { $in: tags };
+    }
+
+    if (questionType) {
+      const matchingQuizIds = await Question.distinct("quiz", {
+        type: questionType,
+      });
+      query._id = { $in: matchingQuizIds };
+    }
+
+    const total = await Quiz.countDocuments(query);
+
+    const quizzes = await Quiz.find(query)
+      .skip(page * pageSize)
+      .limit(pageSize)
+      .sort({ createdAt: -1 });
+
+    return new PagedResult(quizzes, total, page, pageSize);
   }
-
-  // Truy vấn nâng cao: chỉ lấy quiz có ít nhất 1 câu hỏi loại mong muốn
-  if (questionType) {
-    const matchingQuizIds = await Question.distinct("quiz", {
-      type: questionType,
-    });
-    query._id = { $in: matchingQuizIds };
-  }
-
-  const total = await Quiz.countDocuments(query);
-
-  const quizzes = await Quiz.find(query)
-    .skip(page * pageSize)
-    .limit(pageSize)
-    .sort({ createdAt: -1 });
-
-  return {
-    data: quizzes,
-    total,
-    currentPage: page,
-    pageSize,
-  };
-}
-
-async getQuizzesByUser(
-  ownerId: string,
-  search?: string,
-  page = 0,
-  pageSize = 10,
-  tags?: string[],
-  questionType?: string
-) {
-  const query: any = { owner: ownerId };
-
-  if (search) {
-    query.title = { $regex: search, $options: "i" };
-  }
-
-  if (tags && tags.length > 0) {
-    query.tags = { $in: tags };
-  }
-
-  if (questionType) {
-    const matchingQuizIds = await Question.distinct("quiz", {
-      type: questionType,
-    });
-    query._id = { $in: matchingQuizIds };
-  }
-
-  const total = await Quiz.countDocuments(query);
-
-  const quizzes = await Quiz.find(query)
-    .skip(page * pageSize)
-    .limit(pageSize)
-    .sort({ createdAt: -1 });
-
-  return {
-    data: quizzes,
-    total,
-    currentPage: page,
-    pageSize,
-  };
-}
-
 }
 
 export default new QuizService();

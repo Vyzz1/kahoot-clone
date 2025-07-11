@@ -1,4 +1,3 @@
-
 import { Response } from "express";
 import { TypedRequest } from "../types/express";
 import { QuizRequest } from "../schemas/quiz.schema";
@@ -10,64 +9,94 @@ class QuizController {
     res.status(201).send(quiz);
   }
 
-  async getQuizById(req: TypedRequest<{ TParams: { id: string } }>, res: Response) {
+  async getQuizById(
+    req: TypedRequest<{ TParams: { id: string } }>,
+    res: Response
+  ) {
     const quiz = await quizService.getQuizById(req.params.id);
     res.send(quiz);
   }
 
-  async updateQuiz(req: TypedRequest<{ TParams: { id: string }; TBody: QuizRequest }>, res: Response) {
+  async updateQuiz(
+    req: TypedRequest<{ TParams: { id: string }; TBody: QuizRequest }>,
+    res: Response
+  ) {
     const quiz = await quizService.updateQuiz(req.params.id, req.body);
     res.send(quiz);
   }
 
-  async deleteQuiz(req: TypedRequest<{ TParams: { id: string } }>, res: Response) {
+  async deleteQuiz(
+    req: TypedRequest<{ TParams: { id: string } }>,
+    res: Response
+  ) {
     await quizService.deleteQuiz(req.params.id);
     res.status(204).send();
   }
 
-  async getPublicQuizzes(req: TypedRequest<{ TQuery: {
-  search?: string;
-  page?: string;
-  pageSize?: string;
-  tags?: string | string[];
-  questionType?: string;
-} }>, res: Response) {
-  const { search, page = "0", pageSize = "10", tags, questionType } = req.query;
-  const tagArray = typeof tags === "string" ? [tags] : tags;
+  async getPublicQuizzes(
+    req: TypedRequest<{
+      TQuery: {
+        search?: string;
+        page?: string;
+        pageSize?: string;
+        tags?: string | string[];
+        questionType?: string;
+      };
+    }>,
+    res: Response
+  ) {
+    const {
+      search,
+      page = "0",
+      pageSize = "10",
+      tags,
+      questionType,
+    } = req.query;
+    const tagArray = typeof tags === "string" ? [tags] : tags;
 
-  const result = await quizService.getPublicQuizzes(
-    search,
-    +page,
-    +pageSize,
-    tagArray,
-    questionType
-  );
+    const result = await quizService.getPublicQuizzes(
+      search,
+      +page,
+      +pageSize,
+      tagArray,
+      questionType
+    );
 
-  res.send(result);
-}
+    res.send(result.response);
+  }
 
-async getMyQuizzes(req: TypedRequest<{ TQuery: {
-  search?: string;
-  page?: string;
-  pageSize?: string;
-  tags?: string | string[];
-  questionType?: string;
-} }>, res: Response) {
-  const { search, page = "0", pageSize = "10", tags, questionType } = req.query;
-  const tagArray = typeof tags === "string" ? [tags] : tags;
+  async getMyQuizzes(
+    req: TypedRequest<{
+      TQuery: {
+        search?: string;
+        page?: string;
+        pageSize?: string;
+        tags?: string | string[];
+        questionType?: string;
+      };
+    }>,
+    res: Response
+  ) {
+    const {
+      search,
+      page = "0",
+      pageSize = "10",
+      tags,
+      questionType,
+    } = req.query;
+    const tagArray = typeof tags === "string" ? [tags] : tags;
 
-  const result = await quizService.getQuizzesByUser(
-    req.user!.id,
-    search,
-    +page,
-    +pageSize,
-    tagArray,
-    questionType
-  );
+    const result = await quizService.getQuizzesByUser(
+      req.user!.id,
+      search,
+      +page,
+      +pageSize,
+      tagArray,
+      questionType
+    );
 
-  res.send(result);
-}
-
+    res.send(result.response);
+  }
 }
 
 export default new QuizController();
