@@ -1,11 +1,17 @@
 import { Router } from "express";
 import validateJWT from "../middlewares/validate-jwt";
+import questionController from "../controllers/question.controller";
 import validateSchema from "../middlewares/validate-schema";
 import { questionSchema } from "../schemas/question.schema";
-import questionController from "../controllers/question.controller";
 import { validateQuizUsership } from "../middlewares/validate-quiz-usership";
 
 const questionRouter = Router();
+
+questionRouter.get(
+  "/",
+  validateJWT,
+  questionController.getAllQuestions
+);
 
 questionRouter.post(
   "/",
@@ -14,6 +20,7 @@ questionRouter.post(
   validateQuizUsership,
   questionController.createQuestion
 );
+
 questionRouter.put(
   "/:id",
   validateJWT,
@@ -21,6 +28,7 @@ questionRouter.put(
   validateQuizUsership,
   questionController.updateQuestion
 );
+
 questionRouter.delete(
   "/:id",
   validateJWT,

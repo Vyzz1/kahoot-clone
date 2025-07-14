@@ -12,7 +12,7 @@ quizRouter.post(
   validateSchema(quizSchema),
   quizController.createQuiz
 );
-
+quizRouter.get("/", quizController.getPublicQuizzes);
 quizRouter.get("/public/list", quizController.getPublicQuizzes);
 quizRouter.get("/my/list", validateJWT, quizController.getMyQuizzes);
 

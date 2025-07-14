@@ -2,9 +2,10 @@ import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import LoginPage from "./pages/login";
 import LayoutDefault from "./layout/layout-default";
-import UserManagement from "./pages/user-management";
 import RegisterPage from "./pages/register";
 import AuthLayout from "./layout/auth-layout";
+import UserManagement from "./pages/user-management";
+import { adminRoutes } from "@/routes/admin.routes";
 
 function App() {
   const router = createBrowserRouter([
@@ -29,6 +30,11 @@ function App() {
               element: <UserManagement />,
             },
           ],
+        },
+        {
+          path: "admin",
+          element: <AuthLayout allowedRole={["admin", "user"]} />,
+          children: adminRoutes,
         },
       ],
     },

@@ -1,4 +1,6 @@
 import { Request } from "express";
+import { ParamsDictionary } from "express-serve-static-core";
+import { ParsedQs } from "qs";
 
 interface RequestTypes {
   TBody?: any;
@@ -24,6 +26,19 @@ export type TypedRequest<T extends RequestTypes = {}> = Request<
   ExtractBody<T>,
   ExtractQuery<T>
 >;
+
+// export type TypedRequest<T extends {
+//   TParams?: ParamsDictionary;
+//   TBody?: any;
+//   TQuery?: ParsedQs;
+// } = {}> = Request<
+//   T["TParams"] extends undefined ? ParamsDictionary : T["TParams"],
+//   any,
+//   T["TBody"] extends undefined ? any : T["TBody"],
+//   T["TQuery"] extends undefined ? ParsedQs : T["TQuery"]
+// >;
+
+
 
 declare interface AuthenticatedRequest extends Request {
   user?: AuthenticatedUser;

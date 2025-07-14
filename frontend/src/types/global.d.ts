@@ -21,13 +21,22 @@ declare type User = {
 };
 
 declare type Pagination<T> = {
-  content: T[];
-  totalCount: number;
-  currentPage: number;
+  data: T[];
+  total: number;
+  page: number;
   pageSize: number;
-  totalPages: number;
-  isFirst: boolean;
-  isLast: boolean;
-  isPrevious: boolean;
-  isNext: boolean;
 };
+
+
+
+declare type Quiz = {
+  _id: string;
+  title: string;
+  description?: string;
+  isPublic: boolean;
+  createdAt: string;
+  updatedAt: string;
+  user: string;
+};
+
+

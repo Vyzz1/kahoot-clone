@@ -62,7 +62,7 @@ class QuizController {
       questionType
     );
 
-    res.send(result.response);
+    res.send(result);
   }
 
   async getMyQuizzes(
@@ -95,7 +95,7 @@ class QuizController {
       questionType
     );
 
-    res.send(result.response);
+    res.send(result);
   }
 }
 

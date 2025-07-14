@@ -2,6 +2,7 @@ import Quiz from "../models/quiz.model";
 import Question from "../models/question.model";
 import { QuizRequest } from "../schemas/quiz.schema";
 import { DocumentNotFoundError } from "../error/customError";
+import { PagedResult } from '../types/pagedResult'; 
 
 class QuizService {
   async createQuiz(data: QuizRequest, userId: string) {

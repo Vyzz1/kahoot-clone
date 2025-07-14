@@ -6,6 +6,8 @@ import {
 import { type AxiosInstance } from "axios";
 import useAxiosPrivate from "./useAxiosPrivate";
 import axios from "@/api/axios";
+import type { ApiError } from "@/types/error";
+
 
 export const fetchData = async <T>(
   customAxios: AxiosInstance,
@@ -17,7 +19,7 @@ export const fetchData = async <T>(
   } catch (error) {
     const axiosError = error as ApiError;
     throw new Error(
-      axiosError.response?.data?.message || "Failed to fetch data"
+      axiosError.response?.data?.message || axiosError.message || "Failed to fetch data"
     );
   }
 };
