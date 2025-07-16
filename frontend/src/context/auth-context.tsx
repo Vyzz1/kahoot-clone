@@ -1,4 +1,5 @@
 import { createContext, useState } from "react";
+import type { CurrentUserType } from "@/types/global";
 
 type AuthType = {
   accessToken: string;

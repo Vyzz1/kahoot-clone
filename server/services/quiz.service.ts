@@ -2,7 +2,7 @@ import Quiz from "../models/quiz.model";
 import Question from "../models/question.model";
 import { QuizRequest } from "../schemas/quiz.schema";
 import { DocumentNotFoundError } from "../error/customError";
-import { PagedResult } from '../types/pagedResult'; 
+import { PagedResult } from "../config/paged-result";
 
 class QuizService {
   async createQuiz(data: QuizRequest, userId: string) {
@@ -33,7 +33,7 @@ class QuizService {
     pageSize = 10,
     tags?: string[],
     questionType?: string
-  ) {
+  ): Promise<PagedResult<typeof Quiz.prototype>> {
     const query: any = { isPublic: true };
 
     if (search) {
@@ -44,7 +44,6 @@ class QuizService {
       query.tags = { $in: tags };
     }
 
-    // Truy vấn nâng cao: chỉ lấy quiz có ít nhất 1 câu hỏi loại mong muốn
     if (questionType) {
       const matchingQuizIds = await Question.distinct("quiz", {
         type: questionType,
@@ -53,7 +52,6 @@ class QuizService {
     }
 
     const total = await Quiz.countDocuments(query);
-
     const quizzes = await Quiz.find(query)
       .skip(page * pageSize)
       .limit(pageSize)
@@ -69,7 +67,7 @@ class QuizService {
     pageSize = 10,
     tags?: string[],
     questionType?: string
-  ) {
+  ): Promise<PagedResult<typeof Quiz.prototype>> {
     const query: any = { user: userId };
 
     if (search) {
@@ -88,7 +86,6 @@ class QuizService {
     }
 
     const total = await Quiz.countDocuments(query);
-
     const quizzes = await Quiz.find(query)
       .skip(page * pageSize)
       .limit(pageSize)

@@ -2,6 +2,10 @@ import { Response } from "express";
 import { TypedRequest } from "../types/express";
 import { QuizRequest } from "../schemas/quiz.schema";
 import quizService from "../services/quiz.service";
+import { PagedResult } from "../config/paged-result"; 
+import Quiz from "../models/quiz.model";
+
+type Quiz = typeof Quiz.prototype;
 
 class QuizController {
   async createQuiz(req: TypedRequest<{ TBody: QuizRequest }>, res: Response) {
@@ -93,7 +97,7 @@ class QuizController {
       +pageSize,
       tagArray,
       questionType
-    );
+    ) ;
 
     res.send(result);
   }

@@ -5,6 +5,7 @@ import UserForm from "./user-form";
 import BanUser from "./ban-user";
 import { cn, getDefaultSorter } from "@/lib/utils";
 import { useUserFilter } from "../_hooks/useUserFilter";
+import type { User, Pagination } from "@/types/global";
 
 interface UserTableProps {
   users: Pagination<User>;

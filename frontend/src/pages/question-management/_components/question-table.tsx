@@ -2,15 +2,21 @@ import { Table, Tag, type TableProps } from "antd";
 import { useQuestionFilter } from "../hooks/useQuestionFilter";
 import QuestionForm from "./question-form";
 import DeleteConfirm from "@/components/delete-confirm";
-import type { Question } from "@/types/types";
+import type { Question, Pagination } from "@/types/types";
 
 interface QuestionTableProps {
   questions: Pagination<Question>;
   isLoading?: boolean;
   onAdd?: (q: Question) => void;
+  quizOptions: { _id: string; title: string }[];
 }
 
-export default function QuestionTable({ questions, isLoading, onAdd }: QuestionTableProps) {
+export default function QuestionTable({
+  questions,
+  isLoading,
+  onAdd,
+  quizOptions,
+}: QuestionTableProps) {
   const { setFilters } = useQuestionFilter();
 
   const columns: TableProps<Question>["columns"] = [
@@ -40,6 +46,7 @@ export default function QuestionTable({ questions, isLoading, onAdd }: QuestionT
             quizId={record.quizId}
             editingQuestion={record}
             onAdd={onAdd || (() => {})}
+            quizOptions={quizOptions} 
           />
           <DeleteConfirm
             term={`question "${record.title}"`}
@@ -65,11 +72,11 @@ export default function QuestionTable({ questions, isLoading, onAdd }: QuestionT
     <Table<Question>
       rowKey={(q) => q._id}
       columns={columns}
-      dataSource={questions.data}
+      dataSource={questions.content}
       loading={isLoading}
       pagination={{
-        total: questions.total,
-        current: questions.page + 1, // backend trả về page bắt đầu từ 0
+        total: questions.totalCount,
+        current: questions.currentPage + 1, // backend trả về page bắt đầu từ 0
         pageSize: questions.pageSize,
       }}
       onChange={onChange}

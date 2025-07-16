@@ -1,9 +1,10 @@
 export type QuestionType = "multiple_choice" | "true_false" | "short_answer" | "ordering" | "poll";
 
-export interface Question {
+export interface NewQuestion {
   _id: string;
   type: QuestionType;
-  title: string;
+  title?: string;
+  content?: string;
   answers: { text: string; isCorrect?: boolean }[]; // dùng cho multiple_choice & true_false
   correctOrder?: string[]; // dùng cho ordering
   answerText?: string;     // dùng cho short_answer
@@ -13,6 +14,9 @@ export interface Question {
   quizId: string;
   createdAt: string;
   updatedAt: string;
+  options?: AnswerOption[];   
+  // Dùng cho multiple_choice, true_false, poll
+  media?: Media; // Dùng cho image, video
 }
 
 export interface Quiz {
@@ -24,6 +28,7 @@ export interface Quiz {
   updatedAt: string;
   user: string;
   questions: Question[]; 
+
 }
 
 // export interface QuizWithQuestions extends Omit<Quiz, "_id" | "createdAt" | "updatedAt" | "user"> {
@@ -31,8 +36,31 @@ export interface Quiz {
 // }
 
 export interface Pagination<T> {
-  data: T[];
-  total: number;
-  page: number;
+  content: T[];
+  totalCount: number;
+  currentPage: number;
   pageSize: number;
+  totalPages: number;
+  isFirst: boolean;
+  isLast: boolean;
+  isPrevious: boolean;
+  isNext: boolean;
+}
+
+export interface AnswerOption {
+  text: string;
+  isCorrect?: boolean;
+}
+
+export interface Media {
+  image?: string;
+  video?: string;
+}
+export interface Answer {
+  text: string;
+  isCorrect?: boolean;
+}
+
+export interface Question extends NewQuestion {
+  _id: string;
 }

@@ -5,7 +5,7 @@ import QuizTable from "./_components/quiz-table";
 import SearchQuiz from "./_components/search-quiz";
 import QuizForm from "./_components/quiz-form";
 import { useQuizFilter } from "./hooks/useQuizFilter";
-import type { Quiz } from "@/types/types";
+import type { Pagination, Quiz } from "@/types/types";
 
 const { Title } = Typography;
 
@@ -21,18 +21,24 @@ export default function QuizManagement() {
   );
 
   return (
-    <section className="p-4 md:p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <section className="p-0 bg-gray-50 min-h-screen">
+      <div className="max-w-screen-xl mx-auto space-y-8 p-4 md:p-6">
         {/* Header */}
-        <Flex justify="space-between" align="center" wrap="wrap" gap="middle">
-          <Title level={3} className="m-0">
-            📚 Quiz Manager
+        <Flex justify="space-between" align="center" wrap="wrap" gap="middle" className="bg-white p-6 rounded-xl shadow-md">
+          <Title level={3} className="m-0 text-gray-800">
+            📚 Quiz Management
           </Title>
           <Flex wrap gap="small">
-            <Button onClick={() => navigate("/admin/quiz-builder")}>
+            <Button
+              onClick={() => navigate("/admin/quiz-builder")}
+              className="rounded-md shadow-sm hover:shadow-md transition-all"
+            >
               Go to Builder
             </Button>
-            <Button onClick={() => navigate("/admin/question-management")}>
+            <Button
+              onClick={() => navigate("/admin/question-management")}
+              className="rounded-md shadow-sm hover:shadow-md transition-all"
+            >
               Manage Questions
             </Button>
             <QuizForm isEdit={false} />
@@ -40,10 +46,14 @@ export default function QuizManagement() {
         </Flex>
 
         {/* Filters */}
-        <Flex wrap gap="middle">
+        <Flex wrap gap="middle" className="bg-white p-4 rounded-xl shadow-md">
           <SearchQuiz />
           {shouldResetFilters && (
-            <Button type="dashed" onClick={deleteAllFilters}>
+            <Button
+              type="dashed"
+              onClick={deleteAllFilters}
+              className="rounded-md shadow-sm hover:shadow-md transition-all"
+            >
               Reset Filters
             </Button>
           )}
@@ -53,13 +63,13 @@ export default function QuizManagement() {
         <div className="bg-white shadow rounded-xl p-4 min-h-[300px]">
           {isLoading ? (
             <div className="text-center py-16">
-              <Spin size="large" />
+              <Spin size="large" tip="Loading Quizzes..." />
             </div>
           ) : error ? (
-            <div className="text-center text-red-500">
-              {error.response?.data?.message || "Something went wrong"}
+            <div className="text-center text-red-500 py-16">
+              {error.response?.data?.message || "Failed to load quizzes!"}
             </div>
-          ) : data && data.data.length > 0 ? (
+          ) : data && data.content.length > 0 ? (
             <QuizTable quizzes={data} isLoading={isLoading} />
           ) : (
             <Empty description="No quizzes found." className="py-12" />

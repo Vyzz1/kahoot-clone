@@ -12,6 +12,7 @@ async getAllQuestions(
       pageSize?: string;
       search?: string;
       type?: string;
+      quizId?: string;
     };
   }>,
   res: Response
@@ -28,9 +29,10 @@ async getAllQuestions(
     pageSize: parseInt(pageSize),
     search,
     type,
+    quizId: req.query.quizId,
   });
 
-  res.send(result);
+  res.send(result.response);
 }
 
   async createQuestion(req: TypedRequest<{ TBody: QuestionRequest }>, res: Response) {

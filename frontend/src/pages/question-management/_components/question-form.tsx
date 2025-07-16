@@ -1,186 +1,306 @@
-import { Form, Input, Select, Button, Upload, message } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { Form, Input, Select, Button, Upload, message, Checkbox } from "antd";
+import { UploadOutlined, PlusOutlined, MinusOutlined } from "@ant-design/icons";
 import { useState, useEffect } from "react";
-import type { Question, QuestionType } from "@/types/types";
-import { v4 as uuidv4 } from "uuid";
+import type { NewQuestion, Question, QuestionType } from "@/types/types";
+import { useSaveQuestion } from "../hooks/useSaveQuestion";
+// import { useNavigate } from "react-router-dom";
 
 const { TextArea } = Input;
+
+interface QuizOption {
+  _id: string;
+  title: string;
+}
 
 interface QuestionFormProps {
   onAdd: (q: Question) => void;
   editingQuestion?: Question | null;
-  quizId: string;
+  quizId?: string;
+  quizOptions?: QuizOption[];
+  disabledQuizSelect?: boolean;
 }
 
-export default function QuestionForm({ onAdd, editingQuestion, quizId }: QuestionFormProps) {
+// Dummy upload function (replace with your actual upload logic)
+const dummyUpload = async (file: File): Promise<string> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        resolve(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }, 1000);
+  });
+};
+
+export default function QuestionForm({
+  onAdd,
+  editingQuestion,
+  quizId,
+  quizOptions = [],
+  disabledQuizSelect = false,
+}: QuestionFormProps) {
   const [form] = Form.useForm();
+  // const navigate = useNavigate();
   const [questionType, setQuestionType] = useState<QuestionType>(
     editingQuestion?.type || "multiple_choice"
   );
-  const [imageUrl, setImageUrl] = useState<string | undefined>();
-  const [videoUrl, setVideoUrl] = useState<string | undefined>();
+  const [imageUrl, setImageUrl] = useState<string | undefined>(editingQuestion?.media?.image);
+  const [videoUrl, setVideoUrl] = useState<string | undefined>(editingQuestion?.media?.video);
+
+  const [options, setOptions] = useState<{ text: string; isCorrect: boolean }[]>(() => {
+    if (editingQuestion?.type === 'multiple_choice' || editingQuestion?.type === 'poll') {
+      return editingQuestion.answers?.map(ans => ({ text: ans.text, isCorrect: ans.isCorrect || false })) || [{ text: '', isCorrect: false }, { text: '', isCorrect: false }];
+    } else if (editingQuestion?.type === 'true_false') {
+      return [
+        { text: 'True', isCorrect: editingQuestion.answers?.some(a => a.text === 'True' && a.isCorrect) || false },
+        { text: 'False', isCorrect: editingQuestion.answers?.some(a => a.text === 'False' && a.isCorrect) || false },
+      ];
+    }
+    return [{ text: '', isCorrect: false }, { text: '', isCorrect: false }];
+  });
+  const { mutate } = useSaveQuestion();
 
   useEffect(() => {
     if (editingQuestion) {
       setQuestionType(editingQuestion.type);
-      setImageUrl(editingQuestion.image);
-      setVideoUrl(editingQuestion.video);
-
+      setImageUrl(editingQuestion.media?.image);
+      setVideoUrl(editingQuestion.media?.video);
       form.setFieldsValue({
-        title: editingQuestion.title,
-        answers: editingQuestion.answers?.map((a) => a.text).join("\n"),
-        correctIndex: editingQuestion.answers?.findIndex((a) => a.isCorrect) ?? 0,
+        quizId: editingQuestion.quizId,
+        type: editingQuestion.type,
+        content: editingQuestion.content,
         timeLimit: editingQuestion.timeLimit,
         answerText: editingQuestion.answerText,
-        correctOrder: editingQuestion.correctOrder?.join("\n"),
+        correctOrder: editingQuestion.correctOrder?.join('\n'),
       });
+      if (editingQuestion.type === 'multiple_choice' || editingQuestion.type === 'poll') {
+        setOptions(editingQuestion.answers?.map(ans => ({ text: ans.text, isCorrect: ans.isCorrect || false })) || [{ text: '', isCorrect: false }, { text: '', isCorrect: false }]);
+      } else if (editingQuestion.type === 'true_false') {
+         setOptions([
+           { text: 'True', isCorrect: editingQuestion.answers?.some(a => a.text === 'True' && a.isCorrect) || false },
+           { text: 'False', isCorrect: editingQuestion.answers?.some(a => a.text === 'False' && a.isCorrect) || false },
+         ]);
+      }
     } else {
       form.resetFields();
+      setQuestionType("multiple_choice");
       setImageUrl(undefined);
       setVideoUrl(undefined);
-      setQuestionType("multiple_choice");
+      setOptions([{ text: '', isCorrect: false }, { text: '', isCorrect: false }]);
     }
-  }, [editingQuestion]);
+  }, [editingQuestion, form]);
 
-  const onFinish = (values: any) => {
-    const now = new Date().toISOString();
-    const base: Question = {
-      _id: editingQuestion?._id || uuidv4(),
+  const onFinish = async (values: any) => {
+    const baseQuestionData: Partial<NewQuestion> = {
       type: questionType,
-      title: values.title,
-      quizId,
-      timeLimit: values.timeLimit,
-      image: imageUrl,
-      video: videoUrl,
-      createdAt: editingQuestion?.createdAt || now,
-      updatedAt: now,
-      answers: [],
+      quizId: quizId || values.quizId,
+      content: values.content,
+      timeLimit: values.timeLimit ? parseInt(values.timeLimit, 10) : 30,
+      media: {
+        image: imageUrl,
+        video: videoUrl,
+      },
+      answerText: undefined,
+      correctOrder: undefined,
     };
 
-    switch (questionType) {
-      case "multiple_choice":
-      case "poll": {
-        const answers = values.answers
-          .split("\n")
-          .map((t: string) => t.trim())
-          .filter(Boolean);
-        base.answers = answers.map((text: string, index: number) => ({
-          text,
-          isCorrect: questionType === "multiple_choice" && index === values.correctIndex,
-        }));
-        break;
+    const finalQuestionData: Partial<Question> = { ...baseQuestionData }; // Changed let to const
+
+    // Handle options based on question type
+    if (questionType === 'multiple_choice' || questionType === 'poll') {
+      const filteredOptions = options.filter(option => option.text.trim() !== '');
+      if (filteredOptions.length < 2) {
+        message.error('Please add at least two options for multiple choice/poll questions.');
+        return;
       }
-      case "true_false": {
-        base.answers = [
-          { text: "True", isCorrect: values.correctIndex === 0 },
-          { text: "False", isCorrect: values.correctIndex === 1 },
-        ];
-        break;
+      if (questionType === 'multiple_choice' && !filteredOptions.some(opt => opt.isCorrect)) {
+          message.error('Please mark at least one correct answer for multiple choice.');
+          return;
       }
-      case "short_answer":
-        base.answerText = values.answerText;
-        break;
-      case "ordering":
-        base.correctOrder = values.correctOrder
-          .split("\n")
-          .map((line: string) => line.trim())
-          .filter(Boolean);
-        break;
+      finalQuestionData.options = filteredOptions;
+    } else if (questionType === 'true_false') {
+        const trueOption = { text: 'True', isCorrect: values.correctAnswer === true };
+        const falseOption = { text: 'False', isCorrect: values.correctAnswer === false };
+        finalQuestionData.options = [trueOption, falseOption];
+    } else if (questionType === 'short_answer') {
+      if (!values.answerText || values.answerText.trim() === '') {
+        message.error('Answer text is required for short answer questions.');
+        return;
+      }
+      finalQuestionData.answerText = values.answerText.trim();
+    } else if (questionType === 'ordering') {
+      const parsedOrder = values.correctOrder.split('\n').map((item: string) => item.trim()).filter((item: string) => item !== '');
+      if (parsedOrder.length < 2) {
+        message.error('Please add at least two items for ordering.');
+        return;
+      }
+      finalQuestionData.correctOrder = parsedOrder;
     }
 
-    onAdd(base);
-    message.success(editingQuestion ? "Updated question" : "Added question");
-    form.resetFields();
-    setImageUrl(undefined);
-    setVideoUrl(undefined);
-    setQuestionType("multiple_choice");
-  };
+    if (editingQuestion?._id) {
+        finalQuestionData._id = editingQuestion._id;
+    }
 
-  const dummyUpload = async (file: File): Promise<string> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(URL.createObjectURL(file));
-      }, 500);
+    mutate(finalQuestionData as Question, {
+      onSuccess: (data) => {
+        message.success(editingQuestion ? 'Question updated successfully!' : 'Question added successfully!');
+        onAdd?.(data);
+        form.resetFields();
+        setQuestionType("multiple_choice");
+        setOptions([{ text: '', isCorrect: false }, { text: '', isCorrect: false }]);
+        setImageUrl(undefined);
+        setVideoUrl(undefined);
+      },
+      onError: (error: any) => {
+        const errorMessage = error?.response?.data?.message || 'Failed to save question.';
+        message.error(errorMessage);
+        console.error("Error saving question:", error);
+      },
     });
   };
 
   return (
-    <Form layout="vertical" onFinish={onFinish} form={form}>
-      <Form.Item label="Question Type" name="type" initialValue={questionType}>
-        <Select
-          value={questionType}
-          onChange={(v: QuestionType) => {
-            setQuestionType(v);
-            form.resetFields();
-            setImageUrl(undefined);
-            setVideoUrl(undefined);
-          }}
+    <Form
+      form={form}
+      layout="vertical"
+      onFinish={onFinish}
+      initialValues={{
+        type: "multiple_choice",
+        timeLimit: 30,
+      }}
+    >
+      {!quizId && (
+        <Form.Item
+          label="Select Quiz"
+          name="quizId"
+          rules={[{ required: true, message: "Please select a quiz!" }]}
+          hidden={disabledQuizSelect}
         >
+          <Select placeholder="Select a quiz" disabled={disabledQuizSelect}>
+            {quizOptions.map((option) => (
+              <Select.Option key={option._id} value={option._id}>
+                {option.title}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+      )}
+
+      <Form.Item label="Question Type" name="type">
+        <Select value={questionType} onChange={(value: QuestionType) => {
+            setQuestionType(value);
+            if (value === 'multiple_choice' || value === 'poll') {
+                setOptions([{ text: '', isCorrect: false }, { text: '', isCorrect: false }]);
+            } else if (value === 'true_false') {
+                 setOptions([
+                   { text: 'True', isCorrect: false },
+                   { text: 'False', isCorrect: false },
+                 ]);
+            } else {
+                 setOptions([]);
+            }
+            form.resetFields(['answerText', 'correctOrder']);
+        }}>
           <Select.Option value="multiple_choice">Multiple Choice</Select.Option>
-          <Select.Option value="true_false">True / False</Select.Option>
+          <Select.Option value="true_false">True/False</Select.Option>
           <Select.Option value="short_answer">Short Answer</Select.Option>
           <Select.Option value="ordering">Ordering</Select.Option>
           <Select.Option value="poll">Poll</Select.Option>
         </Select>
       </Form.Item>
 
-      <Form.Item label="Question Title" name="title" rules={[{ required: true }]}>
-        <Input placeholder="Enter question title..." />
+      <Form.Item
+        label="Question Content"
+        name="content"
+        rules={[{ required: true, message: "Please input the question content!" }]}
+      >
+        <TextArea rows={4} />
       </Form.Item>
 
       {(questionType === "multiple_choice" || questionType === "poll") && (
         <>
-          <Form.Item
-            label="Answers (one per line)"
-            name="answers"
-            rules={[{ required: true }]}
-          >
-            <TextArea placeholder={"Answer A\nAnswer B\nAnswer C"} rows={4} />
-          </Form.Item>
-
-          {questionType === "multiple_choice" && (
+          {options.map((option, index) => (
             <Form.Item
-              label="Correct Answer Index"
-              name="correctIndex"
-              rules={[
-                { required: true },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    const lines = getFieldValue("answers")?.split("\n") || [];
-                    if (value < 0 || value >= lines.length) {
-                      return Promise.reject(
-                        new Error(`Index must be between 0 and ${lines.length - 1}`)
-                      );
-                    }
-                    return Promise.resolve();
-                  },
-                }),
-              ]}
+              key={index}
+              label={`Option ${index + 1}`}
+              required={true}
             >
-              <Input type="number" min={0} />
+              <Input.Group compact>
+                <Input
+                  style={{ width: questionType === "multiple_choice" ? 'calc(100% - 40px)' : '100%' }}
+                  value={option.text}
+                  onChange={(e) => {
+                    const newOptions = [...options];
+                    newOptions[index].text = e.target.value;
+                    setOptions(newOptions);
+                  }}
+                  placeholder={`Enter Option ${index + 1}`}
+                />
+                {questionType === "multiple_choice" && (
+                    <Checkbox
+                        checked={option.isCorrect}
+                        onChange={(e) => {
+                            const newOptions = [...options];
+                            newOptions[index].isCorrect = e.target.checked;
+                            setOptions(newOptions);
+                        }}
+                        style={{ marginLeft: 8 }}
+                    >
+                        Correct
+                    </Checkbox>
+                )}
+                {(options.length > 2 || (options.length === 2 && index === 1)) && (
+                    <Button
+                        danger
+                        icon={<MinusOutlined />}
+                        onClick={() => {
+                            const newOptions = options.filter((_, i) => i !== index);
+                            setOptions(newOptions);
+                        }}
+                        style={{ marginLeft: 8 }}
+                    />
+                )}
+              </Input.Group>
             </Form.Item>
-          )}
+          ))}
+          <Button type="dashed" onClick={() => setOptions([...options, { text: '', isCorrect: false }])} block icon={<PlusOutlined />}>
+            Add Option
+          </Button>
         </>
       )}
 
       {questionType === "true_false" && (
-        <Form.Item label="Correct Answer" name="correctIndex" initialValue={0} rules={[{ required: true }]}>
-          <Select>
-            <Select.Option value={0}>True</Select.Option>
-            <Select.Option value={1}>False</Select.Option>
+        <Form.Item
+          label="Correct Answer"
+          name="correctAnswer"
+          rules={[{ required: true, message: "Please select the correct answer!" }]}
+          initialValue={editingQuestion?.answers?.some(a => a.text === 'True' && a.isCorrect) ? true : editingQuestion?.answers?.some(a => a.text === 'False' && a.isCorrect) ? false : undefined}
+        >
+          <Select placeholder="Select True or False">
+            <Select.Option value={true}>True</Select.Option>
+            <Select.Option value={false}>False</Select.Option>
           </Select>
         </Form.Item>
       )}
 
       {questionType === "short_answer" && (
-        <Form.Item label="Correct Answer Text" name="answerText" rules={[{ required: true }]}>
-          <Input placeholder="Expected short answer..." />
+        <Form.Item
+          label="Correct Answer Text"
+          name="answerText"
+          rules={[{ required: true, message: "Please enter the correct answer!" }]}
+        >
+          <Input />
         </Form.Item>
       )}
 
       {questionType === "ordering" && (
-        <Form.Item label="Correct Order (one per line)" name="correctOrder" rules={[{ required: true }]}>
-          <TextArea rows={4} placeholder={"Step 1\nStep 2\nStep 3"} />
+        <Form.Item
+          label="Correct Order"
+          name="correctOrder"
+          rules={[{ required: true, message: "Please enter the correct order!" }]}
+        >
+          <TextArea rows={4} placeholder={"Item 1\nItem 2\nItem 3 (one item per line)"} />
         </Form.Item>
       )}
 
@@ -220,9 +340,11 @@ export default function QuestionForm({ onAdd, editingQuestion, quizId }: Questio
         )}
       </Form.Item>
 
-      <Button type="primary" htmlType="submit" block>
-        {editingQuestion ? "Update Question" : "Add Question"}
-      </Button>
+      <Form.Item>
+        <Button type="primary" htmlType="submit">
+          {editingQuestion ? "Update Question" : "Add Question"}
+        </Button>
+      </Form.Item>
     </Form>
   );
 }

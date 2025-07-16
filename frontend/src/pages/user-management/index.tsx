@@ -6,6 +6,7 @@ import UserForm from "./_components/user-form";
 import SearchUser from "./_components/search-user";
 import { useUserFilter } from "./_hooks/useUserFilter";
 import { useNavigate } from "react-router-dom";
+import type { Pagination, User } from "@/types/global";
 
 export default function UserManagement() {
   const navigate = useNavigate();

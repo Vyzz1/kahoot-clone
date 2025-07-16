@@ -1,12 +1,13 @@
 import Question from "../models/question.model";
 import Quiz from "../models/quiz.model";
-import { PagedResult } from "../utils/pagination";
+import { PagedResult } from "../config/paged-result";
 
 interface GetAllQuestionsParams {
   page: number;
   pageSize: number;
   search?: string;
   type?: string;
+  quizId?: string ;
 }
 
 const getAllQuestions = async ({
@@ -14,10 +15,12 @@ const getAllQuestions = async ({
   pageSize,
   search = "",
   type,
+  quizId,
 }: GetAllQuestionsParams) => {
   const filter: Record<string, any> = {};
-  if (search) filter.title = { $regex: search, $options: "i" };
+  if (search) filter.content = { $regex: search, $options: "i" }; // ✅ đổi title -> content
   if (type) filter.type = type;
+  if (quizId) filter.quiz = quizId; // ✅ thêm dòng này
 
   const total = await Question.countDocuments(filter);
   const data = await Question.find(filter)
@@ -29,8 +32,9 @@ const getAllQuestions = async ({
 };
 
 const createQuestion = async (data: any) => {
-  const question = await Question.create({ ...data, quiz: data.quizId });
-  await Quiz.findByIdAndUpdate(data.quizId, {
+  const { quizId, ...rest } = data; // ✅ loại bỏ quizId
+  const question = await Question.create({ ...rest, quiz: quizId });
+  await Quiz.findByIdAndUpdate(quizId, {
     $push: { questions: question._id },
   });
   return question;

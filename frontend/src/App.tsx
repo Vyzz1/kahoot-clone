@@ -23,18 +23,14 @@ function App() {
         },
         {
           path: "admin",
-          element: <AuthLayout allowedRole={["user"]} />,
+          element: <AuthLayout allowedRole={["admin", "user"]} />,
           children: [
             {
               path: "user-management",
               element: <UserManagement />,
             },
+            ...adminRoutes,
           ],
-        },
-        {
-          path: "admin",
-          element: <AuthLayout allowedRole={["admin", "user"]} />,
-          children: adminRoutes,
         },
       ],
     },
