@@ -9,16 +9,17 @@ import {
   Table,
   Dropdown,
   Modal,
+  Select,
+  message, // Import message for notifications
 } from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { MoreOutlined, PlusOutlined } from "@ant-design/icons";
 import useFetchData from "@/hooks/useFetchData";
 import QuestionForm from "./_components/question-form";
 import SearchQuestion from "./_components/search-question";
-import deleteQuestionById from "./hooks/delete-confirm";
+import { useDeleteQuestion } from "./hooks/useDeleteQuestion"; // Import the new hook
 import { useQuestionFilter } from "./hooks/useQuestionFilter";
 import type { Question, Quiz } from "@/types/types";
-import { useQueryClient } from "@tanstack/react-query";
 import type { TableProps } from "antd";
 import { useState } from "react";
 import type { Pagination } from "@/types/types";
@@ -26,15 +27,17 @@ import type { Pagination } from "@/types/types";
 const { Title } = Typography;
 
 export default function QuestionManagement() {
-  const { getParamsString, deleteAllFilters, shouldResetFilters } = useQuestionFilter();
+  const { getParamsString, deleteAllFilters, shouldResetFilters, setFilters } = useQuestionFilter();
   const [searchParams] = useSearchParams();
   const quizId = searchParams.get("quizId");
 
-  const { data, isLoading, error } = useFetchData<Pagination<Question>>(
+  // Fetch questions based on current filters and quizId
+  const { data, isLoading, error, refetch } = useFetchData<Pagination<Question>>( // Add refetch
     `/questions?${getParamsString()}${quizId ? `&quizId=${quizId}` : ""}`,
     { type: "private" }
   );
 
+  // Fetch quizzes for the dropdown in QuestionForm and for displaying quiz title
   const { data: quizData } = useFetchData<Pagination<Quiz>>("/quizzes?type=private");
   const quizOptions = quizData?.content.map((q) => ({
     _id: q._id,
@@ -42,13 +45,14 @@ export default function QuestionManagement() {
   })) ?? [];
 
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const { mutate: deleteQuestionMutate } = useDeleteQuestion(); // Use the delete hook
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
+  // Handlers for adding/editing questions
   const handleAdd = () => {
-    queryClient.invalidateQueries({ queryKey: ["/questions"] });
+    refetch(); // Refetch questions after add/edit
     setIsModalOpen(false);
     setEditingQuestion(null);
   };
@@ -63,14 +67,21 @@ export default function QuestionManagement() {
     setEditingQuestion(null);
   };
 
+  // Handle type filter change
+  const handleTypeFilterChange = (value: string) => {
+    setFilters({ type: value, currentPage: 1 }); // Reset to first page when filtering
+  };
+
+  // Table columns definition
   const columns: TableProps<Question>["columns"] = [
     {
-      title: "Title",
-      dataIndex: "content",
-      key: "title",
+      title: "Title", // Title column
+      dataIndex: "content", // Use 'content' as dataIndex for question title
+      key: "content",
+      sorter: true, // Enable sorting by title
     },
     {
-      title: "Type",
+      title: "Type", // Type column
       dataIndex: "type",
       key: "type",
       render: (type: string) => (
@@ -92,35 +103,40 @@ export default function QuestionManagement() {
       ),
     },
     {
-      title: "Time",
+      title: "Time", // Time Limit column
       dataIndex: "timeLimit",
       key: "timeLimit",
       render: (t: number) => `${t}s`,
+      sorter: true, // Enable sorting by time limit
     },
     {
-      title: "Actions",
+      title: "Actions", // Actions column
       key: "actions",
       render: (_, record) => {
         const items = [
-          { key: "edit", label: "Edit" },
-          { key: "delete", label: <span className="text-red-500">Delete</span> },
+          { key: "edit", label: "Edit" }, // Edit option
+          { key: "delete", label: <span className="text-red-500">Delete</span> }, // Delete option
         ];
 
         const handleMenuClick = ({ key }: { key: string }) => {
           if (key === "edit") handleEdit(record);
           else if (key === "delete") {
             Modal.confirm({
-              title: `Delete question "${record.title || "this question"}"?`,
+              title: `Are you sure you want to delete question "${record.content || "this question"}"?`, // Confirmation for deletion
               okText: "Yes",
               okType: "danger",
-              cancelText: "Cancel",
-              onOk: async () => {
-                try {
-                  await deleteQuestionById(record._id);
-                  queryClient.invalidateQueries({ queryKey: ["/questions"] });
-                } catch (err) {
-                  console.error("Delete failed:", err);
-                }
+              cancelText: "No",
+              onOk: () => {
+                deleteQuestionMutate(record._id, {
+                  onSuccess: () => {
+                    message.success("Question deleted successfully!");
+                  },
+                  onError: (err: any) => {
+                    const errorMessage = err?.response?.data?.message || 'Failed to delete question.';
+                    message.error(errorMessage);
+                    console.error("Delete failed:", err);
+                  },
+                });
               },
             });
           }
@@ -135,30 +151,60 @@ export default function QuestionManagement() {
     },
   ];
 
+  // Handle table change (pagination, sorting, filtering)
+  const onChange: TableProps<Question>["onChange"] = (pagination, filters, sorter) => {
+    const sortInfo = Array.isArray(sorter) ? sorter[0] : sorter;
+    setFilters({
+      sortBy: sortInfo?.field as string,
+      sortOrder: sortInfo?.order === 'ascend' ? 'asc' : (sortInfo?.order === 'descend' ? 'desc' : undefined), // Map Ant Design sort order to backend
+      currentPage: pagination.current,
+      pageSize: pagination.pageSize,
+    });
+  };
+
   return (
     <section className="p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-8">
         <Flex justify="space-between" align="center" wrap="wrap" gap="middle">
           <div>
-            <Title level={3} className="m-0">🎯 Question Manager</Title>
+            <Title level={3} className="m-0">🎯 Question Management</Title>
+            <p className="text-gray-600">
+              Manage and reuse questions for multiple quizzes.
+            </p>
             {quizId && (
               <span className="text-sm text-gray-500">
-                For quiz: <strong>{quizOptions.find(q => q._id === quizId)?.title || quizId}</strong>
+                For quiz: <strong>{quizOptions.find(q => q._id === quizId)?.title || "Unknown Quiz"}</strong>
               </span>
             )}
           </div>
           <Space wrap>
             <Button onClick={() => navigate("/admin/quiz-management")}>
-              Back to Quizzes
+              Back to Quiz Management
             </Button>
-            <Button icon={<PlusOutlined />} onClick={() => setIsModalOpen(true)}>
-              Add Question
+            <Button icon={<PlusOutlined />} onClick={() => {
+              setEditingQuestion(null); // Ensure no editing question is pre-filled
+              setIsModalOpen(true);
+            }}>
+              Add New Question
             </Button>
           </Space>
         </Flex>
 
-        <Flex wrap gap="middle">
+        <Flex wrap gap="middle" align="center">
           <SearchQuestion />
+          <Select
+            placeholder="Filter by type"
+            style={{ width: 180 }}
+            onChange={handleTypeFilterChange}
+            allowClear
+            value={searchParams.get('type') || undefined} // Control value from searchParams
+          >
+            <Select.Option value="multiple_choice">Multiple Choice</Select.Option>
+            <Select.Option value="true_false">True/False</Select.Option>
+            <Select.Option value="short_answer">Short Answer</Select.Option>
+            <Select.Option value="ordering">Ordering</Select.Option>
+            <Select.Option value="poll">Poll</Select.Option>
+          </Select>
           {shouldResetFilters && (
             <Button type="dashed" onClick={deleteAllFilters}>
               Reset Filters
@@ -173,7 +219,7 @@ export default function QuestionManagement() {
             </div>
           ) : error ? (
             <div className="text-center text-red-500">
-              {error.response?.data?.message || "Something went wrong"}
+              {error.response?.data?.message || "Something went wrong!"}
             </div>
           ) : data && data.content.length > 0 ? (
             <Table
@@ -185,6 +231,7 @@ export default function QuestionManagement() {
                 current: data.currentPage + 1,
                 pageSize: data.pageSize,
               }}
+              onChange={onChange}
             />
           ) : (
             <Empty description="No questions found." className="py-12" />
@@ -196,14 +243,14 @@ export default function QuestionManagement() {
           open={isModalOpen}
           onCancel={handleCancel}
           footer={null}
-          destroyOnHidden
+          destroyOnClose={true} // Use destroyOnClose to reset form on close
         >
           <QuestionForm
             quizId={editingQuestion?.quizId || quizId || ""}
-            editingQuestion={editingQuestion || undefined}
+            editingQuestion={editingQuestion} // Pass editingQuestion directly
             onAdd={handleAdd}
             quizOptions={quizOptions}
-            disabledQuizSelect={!!quizId} 
+            disabledQuizSelect={!!quizId}
           />
         </Modal>
       </div>

@@ -12,10 +12,15 @@ export default function QuizForm({ quiz, setQuiz }: Props) {
 
   useEffect(() => {
     form.setFieldsValue(quiz);
-  }, [quiz]);
+  }, [quiz, form]);
 
   const handleChange = (_: any, allValues: Quiz) => {
-    setQuiz(allValues);
+    // Explicitly convert quizTimeLimit to a number
+    const updatedValues = {
+      ...allValues,
+      quizTimeLimit: allValues.quizTimeLimit ? Number(allValues.quizTimeLimit) : 0,
+    };
+    setQuiz(updatedValues);
   };
 
   return (
@@ -35,6 +40,14 @@ export default function QuizForm({ quiz, setQuiz }: Props) {
 
       <Form.Item label="Description" name="description">
         <Input.TextArea placeholder="Add an optional description..." />
+      </Form.Item>
+
+      <Form.Item
+        label="Quiz Time Limit (minutes)"
+        name="quizTimeLimit"
+        rules={[{ required: true, type: 'number', min: 1, message: "Time limit must be a positive number" }]}
+      >
+        <Input type="number" min={1} placeholder="Enter overall quiz time limit in minutes" />
       </Form.Item>
 
       <Form.Item label="Public" name="isPublic" valuePropName="checked">

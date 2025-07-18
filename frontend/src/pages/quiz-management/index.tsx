@@ -1,4 +1,4 @@
-import { Button, Empty, Flex, Spin, Typography } from "antd";
+import { Button, Empty, Flex, Spin, Typography, Select } from "antd";
 import { useNavigate } from "react-router-dom";
 import useFetchData from "@/hooks/useFetchData";
 import QuizTable from "./_components/quiz-table";
@@ -11,14 +11,30 @@ const { Title } = Typography;
 
 export default function QuizManagement() {
   const navigate = useNavigate();
-  const { getParamsString, shouldResetFilters, deleteAllFilters } = useQuizFilter();
+  const { search, page, pageSize, tags, questionType, isPublic, shouldResetFilters, deleteAllFilters, setFilters } = useQuizFilter();
+
+  const queryParams = new URLSearchParams({
+    page: String(page ?? 0),
+    pageSize: String(pageSize ?? 10),
+    ...(search ? { search } : {}),
+    ...(tags && tags.length ? { tags: tags.join(",") } : {}),
+    ...(questionType ? { questionType } : {}),
+    ...(isPublic !== "all" ? { isPublic: String(isPublic) } : {}),
+  }).toString();
+
+  const endpoint = `/quizzes?${queryParams}`;
 
   const { data, isLoading, error } = useFetchData<Pagination<Quiz>>(
-    `/quizzes?${getParamsString()}`,
+    endpoint,
     {
+      uniqueKey: endpoint, // dùng chính endpoint làm key
       type: "private",
     }
   );
+
+  const handleVisibilityChange = (value: string) => {
+    setFilters({ isPublic: value, page: 0 });
+  };
 
   return (
     <section className="p-0 bg-gray-50 min-h-screen">
@@ -41,13 +57,25 @@ export default function QuizManagement() {
             >
               Manage Questions
             </Button>
-            <QuizForm isEdit={false} />
+            <QuizForm isEdit={false} currentQueryKey={endpoint} /> {/* ✅ Truyền endpoint làm currentQueryKey */}
           </Flex>
         </Flex>
 
         {/* Filters */}
         <Flex wrap gap="middle" className="bg-white p-4 rounded-xl shadow-md">
           <SearchQuiz />
+          <Select
+            placeholder="Filter by Visibility"
+            style={{ width: 180 }}
+            onChange={handleVisibilityChange}
+            value={isPublic === true ? "true" : isPublic === false ? "false" : "all"}
+            className="rounded-md shadow-sm"
+            options={[
+              { value: "all", label: "All Visibility" },
+              { value: "true", label: "Public" },
+              { value: "false", label: "Private" },
+            ]}
+          />
           {shouldResetFilters && (
             <Button
               type="dashed"
@@ -70,7 +98,7 @@ export default function QuizManagement() {
               {error.response?.data?.message || "Failed to load quizzes!"}
             </div>
           ) : data && data.content.length > 0 ? (
-            <QuizTable quizzes={data} isLoading={isLoading} />
+            <QuizTable quizzes={data} isLoading={isLoading} currentQueryKey={endpoint} /> 
           ) : (
             <Empty description="No quizzes found." className="py-12" />
           )}

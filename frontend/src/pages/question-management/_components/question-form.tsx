@@ -3,7 +3,6 @@ import { UploadOutlined, PlusOutlined, MinusOutlined } from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import type { NewQuestion, Question, QuestionType } from "@/types/types";
 import { useSaveQuestion } from "../hooks/useSaveQuestion";
-// import { useNavigate } from "react-router-dom";
 
 const { TextArea } = Input;
 
@@ -41,7 +40,6 @@ export default function QuestionForm({
   disabledQuizSelect = false,
 }: QuestionFormProps) {
   const [form] = Form.useForm();
-  // const navigate = useNavigate();
   const [questionType, setQuestionType] = useState<QuestionType>(
     editingQuestion?.type || "multiple_choice"
   );
@@ -73,6 +71,9 @@ export default function QuestionForm({
         timeLimit: editingQuestion.timeLimit,
         answerText: editingQuestion.answerText,
         correctOrder: editingQuestion.correctOrder?.join('\n'),
+        correctAnswer: editingQuestion.type === 'true_false'
+            ? (editingQuestion.answers?.some(a => a.text === 'True' && a.isCorrect) ? true : editingQuestion.answers?.some(a => a.text === 'False' && a.isCorrect) ? false : undefined)
+            : undefined,
       });
       if (editingQuestion.type === 'multiple_choice' || editingQuestion.type === 'poll') {
         setOptions(editingQuestion.answers?.map(ans => ({ text: ans.text, isCorrect: ans.isCorrect || false })) || [{ text: '', isCorrect: false }, { text: '', isCorrect: false }]);
@@ -103,9 +104,10 @@ export default function QuestionForm({
       },
       answerText: undefined,
       correctOrder: undefined,
+      options: undefined, // Reset options to ensure clean state for new types
     };
 
-    const finalQuestionData: Partial<Question> = { ...baseQuestionData }; // Changed let to const
+    const finalQuestionData: Partial<Question> = { ...baseQuestionData };
 
     // Handle options based on question type
     if (questionType === 'multiple_choice' || questionType === 'poll') {
@@ -118,11 +120,11 @@ export default function QuestionForm({
           message.error('Please mark at least one correct answer for multiple choice.');
           return;
       }
-      finalQuestionData.options = filteredOptions;
+      finalQuestionData.answers = filteredOptions; // Use 'answers' instead of 'options' as per type definition
     } else if (questionType === 'true_false') {
         const trueOption = { text: 'True', isCorrect: values.correctAnswer === true };
         const falseOption = { text: 'False', isCorrect: values.correctAnswer === false };
-        finalQuestionData.options = [trueOption, falseOption];
+        finalQuestionData.answers = [trueOption, falseOption];
     } else if (questionType === 'short_answer') {
       if (!values.answerText || values.answerText.trim() === '') {
         message.error('Answer text is required for short answer questions.');
@@ -168,6 +170,7 @@ export default function QuestionForm({
       initialValues={{
         type: "multiple_choice",
         timeLimit: 30,
+        quizId: quizId, // Set initial quizId if provided
       }}
     >
       {!quizId && (
@@ -200,7 +203,7 @@ export default function QuestionForm({
             } else {
                  setOptions([]);
             }
-            form.resetFields(['answerText', 'correctOrder']);
+            form.resetFields(['answerText', 'correctOrder', 'correctAnswer']); // Reset relevant fields
         }}>
           <Select.Option value="multiple_choice">Multiple Choice</Select.Option>
           <Select.Option value="true_false">True/False</Select.Option>
@@ -228,7 +231,7 @@ export default function QuestionForm({
             >
               <Input.Group compact>
                 <Input
-                  style={{ width: questionType === "multiple_choice" ? 'calc(100% - 40px)' : '100%' }}
+                  style={{ width: questionType === "multiple_choice" ? 'calc(100% - 100px)' : 'calc(100% - 50px)' }}
                   value={option.text}
                   onChange={(e) => {
                     const newOptions = [...options];
@@ -250,7 +253,7 @@ export default function QuestionForm({
                         Correct
                     </Checkbox>
                 )}
-                {(options.length > 2 || (options.length === 2 && index === 1)) && (
+                {(options.length > 2 || (options.length === 2 && index === 1 && options[0].text.trim() !== '')) && ( // Ensure at least 2 options for deletion to appear
                     <Button
                         danger
                         icon={<MinusOutlined />}
@@ -275,7 +278,7 @@ export default function QuestionForm({
           label="Correct Answer"
           name="correctAnswer"
           rules={[{ required: true, message: "Please select the correct answer!" }]}
-          initialValue={editingQuestion?.answers?.some(a => a.text === 'True' && a.isCorrect) ? true : editingQuestion?.answers?.some(a => a.text === 'False' && a.isCorrect) ? false : undefined}
+          // initialValue prop handled by useEffect for editingQuestion
         >
           <Select placeholder="Select True or False">
             <Select.Option value={true}>True</Select.Option>

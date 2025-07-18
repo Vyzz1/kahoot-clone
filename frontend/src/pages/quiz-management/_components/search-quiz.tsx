@@ -15,7 +15,7 @@ function SearchQuiz() {
 
   return (
     <Input
-      placeholder="Search quizzes..." // Changed to English
+      placeholder="Search quizzes..."
       prefix={<SearchOutlined className="text-gray-400" />}
       style={{ width: 300 }}
       value={localSearch}

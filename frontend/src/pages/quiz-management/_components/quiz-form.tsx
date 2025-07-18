@@ -1,15 +1,17 @@
 import { useForm } from "antd/es/form/Form";
 import { Modal, Form, Input, Switch, Button, message } from "antd";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useSubmitData from "@/hooks/useSubmitData";
 import { useQueryClient } from "@tanstack/react-query";
-import type { Quiz } from "@/types/global";
+import type { Quiz } from "@/types/types";
 import { useNavigate } from "react-router-dom";
 
 interface QuizFormProps {
   isEdit: boolean;
   initialValues?: Quiz;
   onSubmit?: (values: QuizFormFields) => void;
+  isDisabled?: boolean;
+  currentQueryKey: string; // ✅ Thêm prop này
 }
 
 type QuizFormFields = {
@@ -18,58 +20,68 @@ type QuizFormFields = {
   isPublic: boolean;
 };
 
-export default function QuizForm({ isEdit, initialValues, onSubmit }: QuizFormProps) {
+export default function QuizForm({ isEdit, initialValues, onSubmit, isDisabled = false, currentQueryKey }: QuizFormProps) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const [form] = useForm<QuizFormFields>();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (initialValues) {
+      form.setFieldsValue({
+        title: initialValues.title || "",
+        description: initialValues.description || "",
+        isPublic: initialValues.isPublic ?? true,
+      });
+    } else {
+      form.resetFields();
+      form.setFieldsValue({
+        title: "",
+        description: "",
+        isPublic: true,
+      });
+    }
+  }, [initialValues, form]);
+
   const onSuccess = (data: unknown) => {
-    queryClient.invalidateQueries({ queryKey: ["/quizzes"] });
+    const newQuiz = data as Quiz;
+
+    // ✅ Invalidate the quizzes query using the currentQueryKey
+    queryClient.invalidateQueries({ queryKey: [currentQueryKey] });
+
     setOpen(false);
     form.resetFields();
-
-    if (onSubmit) {
-      onSubmit(data as QuizFormFields);
-    }
-
+    if (onSubmit) onSubmit(newQuiz);
     setTimeout(() => {
-      message.success(isEdit ? "Quiz updated successfully!" : "Quiz created successfully!"); // Changed to English
-
-      // ✅ Redirect after new creation
-      if (!isEdit && (data as Quiz)?._id) {
-        navigate(`/admin/question-management?quizId=${(data as Quiz)._id}`);
+      message.success(isEdit ? "Quiz updated successfully!" : "Quiz created successfully!");
+      if (!isEdit && newQuiz._id) {
+        navigate(`/admin/question-management?quizId=${newQuiz._id}`);
       }
     }, 300);
   };
 
   const onError = (error: any) => {
-    const errorMessage = error.response?.data?.message || "An error occurred!"; // Changed to English
-    message.error(errorMessage);
+    message.error(error.response?.data?.message || "An error occurred!");
   };
 
-  const { mutate, isPending } = useSubmitData(
-    `/quizzes/${isEdit ? initialValues?._id : ""}`,
-    onSuccess,
-    onError
-  );
+  const { mutate, isPending } = useSubmitData('', onSuccess, onError);
 
   const handleFinish = (values: QuizFormFields) => {
     const submit = () => {
+      const endpoint = isEdit ? `/quizzes/${initialValues?._id}` : '/quizzes';
       mutate({
         data: values,
         type: isEdit ? "put" : "post",
+        endpoint,
       });
     };
 
     if (isEdit) {
       Modal.confirm({
-        title: "Confirm Update", // Changed to English
-        content: "Are you sure you want to update this quiz?", // Changed to English
-        okText: "Update", // Changed to English
-        cancelText: "Cancel", // Changed to English
-        centered: true,
+        title: "Confirm Update",
+        content: "Are you sure you want to update this quiz?",
         onOk: submit,
+        centered: true,
       });
     } else {
       submit();
@@ -82,55 +94,54 @@ export default function QuizForm({ isEdit, initialValues, onSubmit }: QuizFormPr
         type={isEdit ? "default" : "primary"}
         size="small"
         onClick={() => setOpen(true)}
-        className="rounded-md shadow-sm hover:shadow-md transition-all"
+        disabled={isDisabled}
+        className="rounded-md shadow-sm hover:shadow-md"
       >
-        {isEdit ? "Edit" : "Create Quiz"} {/* Changed to English */}
+        {isEdit ? "Edit" : "Create Quiz"}
       </Button>
 
       <Modal
         open={open}
-        title={isEdit ? "Edit Quiz" : "Create New Quiz"} 
+        title={isEdit ? "Edit Quiz" : "Create New Quiz"}
+        onCancel={() => setOpen(false)}
         footer={null}
         centered
-        onCancel={() => setOpen(false)}
-        destroyOnHidden
-        className="rounded-lg overflow-hidden"
       >
         <Form<QuizFormFields>
           layout="vertical"
           form={form}
-          disabled={isPending}
           initialValues={{
             title: initialValues?.title || "",
             description: initialValues?.description || "",
             isPublic: initialValues?.isPublic ?? true,
           }}
+          disabled={isPending}
           onFinish={handleFinish}
           className="p-4"
         >
           <Form.Item
-            label="Quiz Title" // Changed to English
+            label="Quiz Title"
             name="title"
-            rules={[{ required: true, message: "Quiz title is required" }]} // Changed to English
+            rules={[{ required: true, message: "Quiz title is required" }]}
           >
-            <Input placeholder="Enter quiz title..." className="rounded-md" /> {/* Changed to English */}
+            <Input placeholder="Enter quiz title..." />
           </Form.Item>
 
-          <Form.Item label="Description" name="description"> {/* Changed to English */}
-            <Input.TextArea placeholder="Add an optional description..." rows={3} className="rounded-md" /> {/* Changed to English */}
+          <Form.Item label="Description" name="description">
+            <Input.TextArea placeholder="Add an optional description..." rows={3} />
           </Form.Item>
 
-          <Form.Item label="Public" name="isPublic" valuePropName="checked"> {/* Changed to English */}
-            <Switch checkedChildren="Public" unCheckedChildren="Private" /> {/* Changed to English */}
+          <Form.Item label="Public" name="isPublic" valuePropName="checked">
+            <Switch checkedChildren="Public" unCheckedChildren="Private" />
           </Form.Item>
 
           <Button
             type="primary"
             htmlType="submit"
             loading={isPending}
-            className="w-full rounded-md shadow-sm hover:shadow-md transition-all mt-4"
+            className="w-full mt-4"
           >
-            {isEdit ? "Update Quiz" : "Create Quiz"} {/* Changed to English */}
+            {isEdit ? "Update Quiz" : "Create Quiz"}
           </Button>
         </Form>
       </Modal>

@@ -5,10 +5,12 @@ import quizService from "../services/quiz.service";
 import { PagedResult } from "../config/paged-result"; 
 import Quiz from "../models/quiz.model";
 
-type Quiz = typeof Quiz.prototype;
+// Assuming Quiz type is imported or defined elsewhere correctly
+type QuizType = typeof Quiz.prototype; // Renamed to avoid conflict with interface Quiz
 
 class QuizController {
   async createQuiz(req: TypedRequest<{ TBody: QuizRequest }>, res: Response) {
+    // Ensure req.user is available from authentication middleware
     const quiz = await quizService.createQuiz(req.body, req.user!.userId);
     res.status(201).send(quiz);
   }
@@ -17,6 +19,7 @@ class QuizController {
     req: TypedRequest<{ TParams: { id: string } }>,
     res: Response
   ) {
+    // No user ID needed for public quiz retrieval, assuming service handles public/private logic
     const quiz = await quizService.getQuizById(req.params.id);
     res.send(quiz);
   }
@@ -25,7 +28,8 @@ class QuizController {
     req: TypedRequest<{ TParams: { id: string }; TBody: QuizRequest }>,
     res: Response
   ) {
-    const quiz = await quizService.updateQuiz(req.params.id, req.body);
+    // Pass userId to service to ensure only owner can update
+    const quiz = await quizService.updateQuiz(req.params.id, req.body, req.user!.userId);
     res.send(quiz);
   }
 
@@ -33,41 +37,52 @@ class QuizController {
     req: TypedRequest<{ TParams: { id: string } }>,
     res: Response
   ) {
-    await quizService.deleteQuiz(req.params.id);
+    // Pass userId to service to ensure only owner can delete
+    await quizService.deleteQuiz(req.params.id, req.user!.userId);
     res.status(204).send();
   }
 
-  async getPublicQuizzes(
-    req: TypedRequest<{
-      TQuery: {
-        search?: string;
-        page?: string;
-        pageSize?: string;
-        tags?: string | string[];
-        questionType?: string;
-      };
-    }>,
-    res: Response
-  ) {
-    const {
-      search,
-      page = "0",
-      pageSize = "10",
-      tags,
-      questionType,
-    } = req.query;
-    const tagArray = typeof tags === "string" ? [tags] : tags;
+async getFilteredQuizzes(
+  req: TypedRequest<{
+    TQuery: {
+      search?: string;
+      page?: string;
+      pageSize?: string;
+      tags?: string | string[];
+      questionType?: string;
+      isPublic?: string;
+    };
+  }>,
+  res: Response
+) {
+  const {
+    search,
+    page = "0",
+    pageSize = "10",
+    tags,
+    questionType,
+    isPublic,
+  } = req.query;
 
-    const result = await quizService.getPublicQuizzes(
-      search,
-      +page,
-      +pageSize,
-      tagArray,
-      questionType
-    );
+  const tagArray = typeof tags === "string" ? [tags] : tags;
 
-    res.send(result);
-  }
+  const parsedIsPublic =
+    isPublic === "true" ? true :
+    isPublic === "false" ? false :
+    undefined;
+
+  const result = await quizService.getQuizzesWithFilter(
+    search,
+    +page,
+    +pageSize,
+    tagArray,
+    questionType,
+    parsedIsPublic
+  );
+
+  res.send(result);
+}
+
 
   async getMyQuizzes(
     req: TypedRequest<{
@@ -91,7 +106,7 @@ class QuizController {
     const tagArray = typeof tags === "string" ? [tags] : tags;
 
     const result = await quizService.getQuizzesByUser(
-      req.user!.userId,
+      req.user!.userId, // Ensure req.user.userId is available from authentication middleware
       search,
       +page,
       +pageSize,

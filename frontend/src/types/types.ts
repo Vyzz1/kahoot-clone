@@ -1,13 +1,20 @@
 export type QuestionType = "multiple_choice" | "true_false" | "short_answer" | "ordering" | "poll";
 
+export interface AuthenticatedUser {
+  userId: string;
+  email: string;
+  role: string;
+  // Add other properties if they are part of your AuthenticatedUser structure
+}
+
 export interface NewQuestion {
   _id: string;
   type: QuestionType;
   title?: string;
   content?: string;
-  answers: { text: string; isCorrect?: boolean }[]; // dùng cho multiple_choice & true_false
-  correctOrder?: string[]; // dùng cho ordering
-  answerText?: string;     // dùng cho short_answer
+  answers: { text: string; isCorrect?: boolean }[]; // used for multiple_choice & true_false
+  correctOrder?: string[]; // used for ordering
+  answerText?: string;     // used for short_answer
   image?: string;
   video?: string;
   timeLimit: number;
@@ -15,12 +22,13 @@ export interface NewQuestion {
   createdAt: string;
   updatedAt: string;
   options?: AnswerOption[];   
-  // Dùng cho multiple_choice, true_false, poll
-  media?: Media; // Dùng cho image, video
+  // Used for multiple_choice, true_false, poll
+  media?: Media; // Added: Object for image/video URLs
+  points?: number; // Added: Points for the question
 }
 
 export interface Quiz {
-  _id: string;
+  _id: string; // Still mandatory as per your previous request
   title: string;
   description: string;
   isPublic: boolean;
@@ -28,10 +36,11 @@ export interface Quiz {
   updatedAt: string;
   user: string;
   questions: Question[]; 
+  quizTimeLimit?: number; // Overall time limit for the quiz
 
 }
 
-// export interface QuizWithQuestions extends Omit<Quiz, "_id" | "createdAt" | "updatedAt" | "user"> {
+// export interface QuizWithQuestions extends Omit<Quiz, "_id" | "createdAt" | "_id" | "updatedAt" | "user"> {
 //   questions: Question[];
 // }
 
@@ -59,7 +68,7 @@ export interface Media {
 export interface Answer {
   text: string;
   isCorrect?: boolean;
-}
+  }
 
 export interface Question extends NewQuestion {
   _id: string;

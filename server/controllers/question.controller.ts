@@ -41,12 +41,14 @@ async getAllQuestions(
   }
 
   async updateQuestion(req: TypedRequest<{ TParams: { id: string }; TBody: QuestionRequest }>, res: Response) {
-    const question = await questionService.updateQuestion(req.params.id, req.body);
+    // Truyền req.user!.userId vào phương thức updateQuestion
+    const question = await questionService.updateQuestion(req.params.id, req.body, req.user!.userId);
     res.send(question);
   }
 
   async deleteQuestion(req: TypedRequest<{ TParams: { id: string } }>, res: Response) {
-    await questionService.deleteQuestion(req.params.id);
+    // Truyền req.user!.userId vào phương thức deleteQuestion
+    await questionService.deleteQuestion(req.params.id, req.user!.userId);
     res.status(204).send();
   }
   

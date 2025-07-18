@@ -13,12 +13,11 @@ export function useSaveQuestion() {
 
       if (isNew) {
         // Đối với câu hỏi mới (chưa có _id hoặc có _id tạm thời), gửi POST
-        const { ...newQuestionData } = question; // loại bỏ _id khi POST
+        const { _id, ...newQuestionData } = question; // loại bỏ _id khi POST
         const res = await axiosInstance.post(`/questions`, newQuestionData);
         return res.data;
       } else {
         // Đối với câu hỏi đã tồn tại (có _id thật), gửi PUT
-        // Không cần kiểm tra !question._id ở đây nữa vì đã được xử lý trong isNew
         const res = await axiosInstance.put(`/questions/${question._id}`, question);
         return res.data;
       }
