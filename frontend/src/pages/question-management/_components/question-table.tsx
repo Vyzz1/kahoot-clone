@@ -17,13 +17,18 @@ export default function QuestionTable({
   onAdd,
   quizOptions,
 }: QuestionTableProps) {
-  const { setFilters } = useQuestionFilter();
+  const { setFilters/* , page, pageSize */ } = useQuestionFilter(); // Lấy page và pageSize từ hook
 
   const columns: TableProps<Question>["columns"] = [
     {
+      key: "stt",
+      title: "STT",
+      render: (text, record, index) => (questions.currentPage ?? 0) * (questions.pageSize ?? 10) + index + 1, // Tính toán STT
+    },
+    {
       key: "title",
       title: "Title",
-      dataIndex: "title",
+      dataIndex: "content", // Sử dụng 'content' cho tiêu đề câu hỏi
     },
     {
       key: "type",
@@ -63,7 +68,7 @@ export default function QuestionTable({
     setFilters({
       sortBy: sortInfo?.field as string,
       sortOrder: sortInfo?.order as "ascend" | "descend",
-      currentPage: pagination.current,
+      page: (pagination.current ?? 1) - 1, // Chuyển đổi về page bắt đầu từ 0
       pageSize: pagination.pageSize,
     });
   };
@@ -78,6 +83,8 @@ export default function QuestionTable({
         total: questions.totalCount,
         current: questions.currentPage + 1, // backend trả về page bắt đầu từ 0
         pageSize: questions.pageSize,
+        showSizeChanger: true, // Hiển thị tùy chọn thay đổi kích thước trang
+        showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`, // Hiển thị tổng số mục
       }}
       onChange={onChange}
     />

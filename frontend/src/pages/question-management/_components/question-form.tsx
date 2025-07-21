@@ -1,7 +1,7 @@
-import { Form, Input, Select, Button, Upload, message, Checkbox } from "antd";
+import { Form, Input, Select, Button, Upload, message, Checkbox, Space } from "antd"; // Import Space
 import { UploadOutlined, PlusOutlined, MinusOutlined } from "@ant-design/icons";
 import { useState, useEffect } from "react";
-import type { NewQuestion, Question, QuestionType } from "@/types/types";
+import type { Question, QuestionType } from "@/types/types"; // Removed NewQuestion import
 import { useSaveQuestion } from "../hooks/useSaveQuestion";
 
 const { TextArea } = Input;
@@ -16,7 +16,7 @@ interface QuestionFormProps {
   editingQuestion?: Question | null;
   quizId?: string;
   quizOptions?: QuizOption[];
-  disabledQuizSelect?: boolean;
+  // Removed disabledQuizSelect?: boolean;
 }
 
 // Dummy upload function (replace with your actual upload logic)
@@ -37,7 +37,7 @@ export default function QuestionForm({
   editingQuestion,
   quizId,
   quizOptions = [],
-  disabledQuizSelect = false,
+  // Removed disabledQuizSelect = false,
 }: QuestionFormProps) {
   const [form] = Form.useForm();
   const [questionType, setQuestionType] = useState<QuestionType>(
@@ -47,6 +47,7 @@ export default function QuestionForm({
   const [videoUrl, setVideoUrl] = useState<string | undefined>(editingQuestion?.media?.video);
 
   const [options, setOptions] = useState<{ text: string; isCorrect: boolean }[]>(() => {
+    // Khi chỉnh sửa, đọc từ answers (frontend type) và chuyển đổi thành options cho state nội bộ
     if (editingQuestion?.type === 'multiple_choice' || editingQuestion?.type === 'poll') {
       return editingQuestion.answers?.map(ans => ({ text: ans.text, isCorrect: ans.isCorrect || false })) || [{ text: '', isCorrect: false }, { text: '', isCorrect: false }];
     } else if (editingQuestion?.type === 'true_false') {
@@ -93,23 +94,18 @@ export default function QuestionForm({
   }, [editingQuestion, form]);
 
   const onFinish = async (values: any) => {
-    const baseQuestionData: Partial<NewQuestion> = {
+    const payload: any = { // Sử dụng 'any' cho payload để linh hoạt cấu trúc trước khi gửi
       type: questionType,
-      quizId: quizId || values.quizId,
+      quizId: values.quizId, // Luôn sử dụng values.quizId từ form
       content: values.content,
       timeLimit: values.timeLimit ? parseInt(values.timeLimit, 10) : 30,
       media: {
         image: imageUrl,
         video: videoUrl,
       },
-      answerText: undefined,
-      correctOrder: undefined,
-      options: undefined, // Reset options to ensure clean state for new types
     };
 
-    const finalQuestionData: Partial<Question> = { ...baseQuestionData };
-
-    // Handle options based on question type
+    // Xử lý các câu trả lời dựa trên loại câu hỏi, ánh xạ sang 'options' cho backend
     if (questionType === 'multiple_choice' || questionType === 'poll') {
       const filteredOptions = options.filter(option => option.text.trim() !== '');
       if (filteredOptions.length < 2) {
@@ -120,31 +116,31 @@ export default function QuestionForm({
           message.error('Please mark at least one correct answer for multiple choice.');
           return;
       }
-      finalQuestionData.answers = filteredOptions; // Use 'answers' instead of 'options' as per type definition
+      payload.options = filteredOptions; // Gửi dưới dạng 'options'
     } else if (questionType === 'true_false') {
         const trueOption = { text: 'True', isCorrect: values.correctAnswer === true };
         const falseOption = { text: 'False', isCorrect: values.correctAnswer === false };
-        finalQuestionData.answers = [trueOption, falseOption];
+        payload.options = [trueOption, falseOption]; // Gửi dưới dạng 'options'
     } else if (questionType === 'short_answer') {
       if (!values.answerText || values.answerText.trim() === '') {
         message.error('Answer text is required for short answer questions.');
         return;
       }
-      finalQuestionData.answerText = values.answerText.trim();
+      payload.answerText = values.answerText.trim();
     } else if (questionType === 'ordering') {
       const parsedOrder = values.correctOrder.split('\n').map((item: string) => item.trim()).filter((item: string) => item !== '');
       if (parsedOrder.length < 2) {
         message.error('Please add at least two items for ordering.');
         return;
       }
-      finalQuestionData.correctOrder = parsedOrder;
+      payload.correctOrder = parsedOrder;
     }
 
     if (editingQuestion?._id) {
-        finalQuestionData._id = editingQuestion._id;
+        payload._id = editingQuestion._id;
     }
 
-    mutate(finalQuestionData as Question, {
+    mutate(payload, { // Truyền payload đã được cấu trúc
       onSuccess: (data) => {
         message.success(editingQuestion ? 'Question updated successfully!' : 'Question added successfully!');
         onAdd?.(data);
@@ -169,26 +165,25 @@ export default function QuestionForm({
       onFinish={onFinish}
       initialValues={{
         type: "multiple_choice",
-        timeLimit: 30,
-        quizId: quizId, // Set initial quizId if provided
+        timeLimit: 30, // Initial value for timeLimit is set here
+        quizId: quizId || editingQuestion?.quizId, // Set initial quizId if provided or from editingQuestion
       }}
     >
-      {!quizId && (
-        <Form.Item
-          label="Select Quiz"
-          name="quizId"
-          rules={[{ required: true, message: "Please select a quiz!" }]}
-          hidden={disabledQuizSelect}
-        >
-          <Select placeholder="Select a quiz" disabled={disabledQuizSelect}>
-            {quizOptions.map((option) => (
-              <Select.Option key={option._id} value={option._id}>
-                {option.title}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-      )}
+      {/* Always render Select Quiz */}
+      <Form.Item
+        label="Select Quiz"
+        name="quizId"
+        rules={[{ required: true, message: "Please select a quiz!" }]}
+      >
+        {/* Removed disabled={disabledQuizSelect} to allow changing quiz */}
+        <Select placeholder="Select a quiz">
+          {quizOptions.map((option) => (
+            <Select.Option key={option._id} value={option._id}>
+              {option.title}
+            </Select.Option>
+          ))}
+        </Select>
+      </Form.Item>
 
       <Form.Item label="Question Type" name="type">
         <Select value={questionType} onChange={(value: QuestionType) => {
@@ -229,7 +224,7 @@ export default function QuestionForm({
               label={`Option ${index + 1}`}
               required={true}
             >
-              <Input.Group compact>
+              <Space.Compact style={{ width: '100%' }}>
                 <Input
                   style={{ width: questionType === "multiple_choice" ? 'calc(100% - 100px)' : 'calc(100% - 50px)' }}
                   value={option.text}
@@ -253,7 +248,7 @@ export default function QuestionForm({
                         Correct
                     </Checkbox>
                 )}
-                {(options.length > 2 || (options.length === 2 && index === 1 && options[0].text.trim() !== '')) && ( // Ensure at least 2 options for deletion to appear
+                {(options.length > 2 || (options.length === 2 && index === 1 && options[0].text.trim() !== '')) && (
                     <Button
                         danger
                         icon={<MinusOutlined />}
@@ -264,7 +259,7 @@ export default function QuestionForm({
                         style={{ marginLeft: 8 }}
                     />
                 )}
-              </Input.Group>
+              </Space.Compact>
             </Form.Item>
           ))}
           <Button type="dashed" onClick={() => setOptions([...options, { text: '', isCorrect: false }])} block icon={<PlusOutlined />}>
@@ -278,7 +273,6 @@ export default function QuestionForm({
           label="Correct Answer"
           name="correctAnswer"
           rules={[{ required: true, message: "Please select the correct answer!" }]}
-          // initialValue prop handled by useEffect for editingQuestion
         >
           <Select placeholder="Select True or False">
             <Select.Option value={true}>True</Select.Option>
@@ -307,7 +301,7 @@ export default function QuestionForm({
         </Form.Item>
       )}
 
-      <Form.Item label="Time Limit (seconds)" name="timeLimit" initialValue={30}>
+      <Form.Item label="Time Limit (seconds)" name="timeLimit">
         <Input type="number" min={5} max={300} />
       </Form.Item>
 

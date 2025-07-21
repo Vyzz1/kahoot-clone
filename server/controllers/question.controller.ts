@@ -13,6 +13,8 @@ async getAllQuestions(
       search?: string;
       type?: string;
       quizId?: string;
+      sortBy?: string; // Thêm sortBy
+      sortOrder?: string; // Thêm sortOrder
     };
   }>,
   res: Response
@@ -22,6 +24,8 @@ async getAllQuestions(
     pageSize = "10",
     search = "",
     type,
+    sortBy, // Lấy sortBy từ query
+    sortOrder, // Lấy sortOrder từ query
   } = req.query;
 
   const result = await questionService.getAllQuestions({
@@ -30,6 +34,8 @@ async getAllQuestions(
     search,
     type,
     quizId: req.query.quizId,
+    sortBy, // Truyền sortBy vào service
+    sortOrder, // Truyền sortOrder vào service
   });
 
   res.send(result.response);
@@ -55,3 +61,4 @@ async getAllQuestions(
 }
 
 export default new QuestionController();
+

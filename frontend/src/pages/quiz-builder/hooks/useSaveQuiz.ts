@@ -13,7 +13,7 @@ export function useSaveQuiz() {
       // 1. Tạo quiz:
       // Destructure questions và _id từ quiz.
       // Sử dụng underscore (_) để bỏ qua biến _id không dùng đến, loại bỏ cảnh báo ESLint.
-      const { questions, _id, ...quizDataToSend } = quiz; 
+      const { questions/* , _id */, ...quizDataToSend } = quiz; 
       console.log("Payload to /quizzes:", quizDataToSend); // Log payload của quiz
       const res = await axiosInstance.post("/quizzes", quizDataToSend); // Gửi dữ liệu mà không có _id
       const createdQuiz = res.data as Quiz;

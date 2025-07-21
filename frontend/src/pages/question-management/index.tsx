@@ -17,7 +17,7 @@ import { MoreOutlined, PlusOutlined } from "@ant-design/icons";
 import useFetchData from "@/hooks/useFetchData";
 import QuestionForm from "./_components/question-form";
 import SearchQuestion from "./_components/search-question";
-import { useDeleteQuestion } from "./hooks/useDeleteQuestion"; // Import the new hook
+import { useDeleteQuestion } from "./hooks/delete-confirm"; 
 import { useQuestionFilter } from "./hooks/useQuestionFilter";
 import type { Question, Quiz } from "@/types/types";
 import type { TableProps } from "antd";
@@ -27,7 +27,7 @@ import type { Pagination } from "@/types/types";
 const { Title } = Typography;
 
 export default function QuestionManagement() {
-  const { getParamsString, deleteAllFilters, shouldResetFilters, setFilters } = useQuestionFilter();
+  const { getParamsString, deleteAllFilters, shouldResetFilters, setFilters, type } = useQuestionFilter(); // Removed page, pageSize from destructuring
   const [searchParams] = useSearchParams();
   const quizId = searchParams.get("quizId");
 
@@ -69,11 +69,16 @@ export default function QuestionManagement() {
 
   // Handle type filter change
   const handleTypeFilterChange = (value: string) => {
-    setFilters({ type: value, currentPage: 1 }); // Reset to first page when filtering
+    setFilters({ type: value, page: 0 }); // Reset to first page when filtering
   };
 
   // Table columns definition
   const columns: TableProps<Question>["columns"] = [
+    {
+      key: "stt",
+      title: "STT",
+      render: (text, record, index) => (data?.currentPage ?? 0) * (data?.pageSize ?? 10) + index + 1, // Tính toán STT
+    },
     {
       title: "Title", // Title column
       dataIndex: "content", // Use 'content' as dataIndex for question title
@@ -130,6 +135,7 @@ export default function QuestionManagement() {
                 deleteQuestionMutate(record._id, {
                   onSuccess: () => {
                     message.success("Question deleted successfully!");
+                    refetch(); // Refetch after successful deletion
                   },
                   onError: (err: any) => {
                     const errorMessage = err?.response?.data?.message || 'Failed to delete question.';
@@ -142,9 +148,15 @@ export default function QuestionManagement() {
           }
         };
 
+        // Define menuProps here
+        const menuProps = { items, onClick: handleMenuClick };
+
         return (
-          <Dropdown menu={{ items, onClick: handleMenuClick }} trigger={["click"]}>
-            <Button shape="circle" icon={<MoreOutlined />} />
+          <Dropdown menu={menuProps} trigger={["click"]}>
+            {/* The child of Dropdown must be a single React element */}
+            <span>
+              <Button shape="circle" icon={<MoreOutlined />} />
+            </span>
           </Dropdown>
         );
       },
@@ -157,7 +169,7 @@ export default function QuestionManagement() {
     setFilters({
       sortBy: sortInfo?.field as string,
       sortOrder: sortInfo?.order === 'ascend' ? 'asc' : (sortInfo?.order === 'descend' ? 'desc' : undefined), // Map Ant Design sort order to backend
-      currentPage: pagination.current,
+      page: (pagination.current ?? 1) - 1, // Chuyển đổi về page bắt đầu từ 0
       pageSize: pagination.pageSize,
     });
   };
@@ -197,7 +209,7 @@ export default function QuestionManagement() {
             style={{ width: 180 }}
             onChange={handleTypeFilterChange}
             allowClear
-            value={searchParams.get('type') || undefined} // Control value from searchParams
+            value={type || undefined} // Control value from searchParams
           >
             <Select.Option value="multiple_choice">Multiple Choice</Select.Option>
             <Select.Option value="true_false">True/False</Select.Option>
@@ -230,6 +242,8 @@ export default function QuestionManagement() {
                 total: data.totalCount,
                 current: data.currentPage + 1,
                 pageSize: data.pageSize,
+                showSizeChanger: true, // Hiển thị tùy chọn thay đổi kích thước trang
+                showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`, // Hiển thị tổng số mục
               }}
               onChange={onChange}
             />
@@ -243,14 +257,14 @@ export default function QuestionManagement() {
           open={isModalOpen}
           onCancel={handleCancel}
           footer={null}
-          destroyOnClose={true} // Use destroyOnClose to reset form on close
+          destroyOnHidden={true} // Use destroyOnHidden to reset form on close
         >
           <QuestionForm
             quizId={editingQuestion?.quizId || quizId || ""}
             editingQuestion={editingQuestion} // Pass editingQuestion directly
             onAdd={handleAdd}
             quizOptions={quizOptions}
-            disabledQuizSelect={!!quizId}
+            disabledQuizSelect={!!quizId} // Vô hiệu hóa Select Quiz nếu quizId được truyền
           />
         </Modal>
       </div>
