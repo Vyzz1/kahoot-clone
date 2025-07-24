@@ -100,21 +100,23 @@ export default function MigrationPage() {
             <Title level={4} className="mb-0 text-blue-600">
               <SyncOutlined className="mr-2" />Migration Status
             </Title>
-            <Button
-              icon={<ReloadOutlined />}
-              onClick={() => refetchMigrationStatus()}
-              loading={isLoadingStatus}
-              className="rounded-md shadow-sm"
-            >
-              Refresh Status
-            </Button>
-            <Button
-              icon={<BackwardFilled />}
-              onClick={() => navigate("/admin/user-management")}
-              className="rounded-md shadow-sm"
-            >
-              User Management
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button
+                icon={<BackwardFilled />}
+                onClick={() => navigate("/admin/user-management")}
+                className="rounded-md shadow-sm"
+              >
+                User Management
+              </Button>
+              <Button
+                icon={<ReloadOutlined />}
+                onClick={() => refetchMigrationStatus()}
+                loading={isLoadingStatus}
+                className="rounded-md shadow-sm"
+              >
+                Refresh Status
+              </Button>
+            </div>
           </Flex>
           {isLoadingStatus ? (
             <div className="text-center py-4">

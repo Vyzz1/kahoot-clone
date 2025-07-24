@@ -57,7 +57,7 @@ export default function QuizManagement() {
             >
               Manage Questions
             </Button>
-            <QuizForm isEdit={false} currentQueryKey={endpoint} /> {/* ✅ Truyền endpoint làm currentQueryKey */}
+            <QuizForm isEdit={false} currentQueryKey={endpoint} /> 
           </Flex>
         </Flex>
 
