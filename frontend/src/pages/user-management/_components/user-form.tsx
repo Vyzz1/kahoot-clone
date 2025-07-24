@@ -29,7 +29,6 @@ function UserForm({ isEdit, initialValues, onSubmit }: UserFormProps) {
   const onSuccess = (data: unknown) => {
     queryClient.invalidateQueries({
       queryKey: ["/users/list"],
-      refetchType: "all",
     });
 
     setOpen(false);

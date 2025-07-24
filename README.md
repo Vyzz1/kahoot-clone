@@ -89,6 +89,3 @@ Create `.env` files in both `frontend` and `server` directories. See `.env.examp
 - `npm run start:stag` - Start staging server with nodemon
 - `npm run start:prod` - Start production server with nodemon
 
-- `npm run db:generate` - Generate database schema
-- `npm run db:push` - Push schema to database
-- `npm run studio` - Open Drizzle Studio

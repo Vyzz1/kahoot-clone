@@ -10,12 +10,14 @@ import type { Pagination, User } from "@/types/global";
 
 export default function UserManagement() {
   const navigate = useNavigate();
-  const { getParamsString, shouldResetFilters, deleteAllFilters } = useUserFilter();
+  const { getParamsString, shouldResetFilters, deleteAllFilters } =
+    useUserFilter();
 
   const { data, isLoading, error } = useFetchData<Pagination<User>>(
     `/users/list?${getParamsString()}`,
     {
       type: "private",
+      uniqueKey: ["/users/list", getParamsString()],
     }
   );
 

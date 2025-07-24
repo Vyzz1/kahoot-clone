@@ -58,7 +58,6 @@ function BanUser({ isBanned, id }: BanUserProps) {
       title={`Are you sure you want to ${
         isBanned ? "unban" : "ban"
       } this user?`}
-      description={`This action cannot be undone.`}
       placement="topRight"
       onConfirm={confirm}
       open={open}

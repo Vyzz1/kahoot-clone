@@ -150,10 +150,6 @@ export default function UserTable({ users, isLoading }: UserTableProps) {
     filters,
     sorter
   ) => {
-    console.log("pagination", pagination);
-    console.log("filters", filters);
-    console.log("sorter", sorter);
-
     const sortInfo = Array.isArray(sorter) ? sorter[0] : sorter;
     const sortDirection = sortInfo.order;
 
