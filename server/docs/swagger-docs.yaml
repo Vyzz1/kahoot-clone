@@ -1,0 +1,1375 @@
+openapi: 3.1.0
+info:
+  title: Swagger Kahoot Clone - OpenAPI 1.0
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.12
+servers:
+  - url: http://localhost:8080
+    description: Development server
+  - url: https://kahoot-clone.com
+    description: Production server
+tags:
+  - name: user
+    description: User Managements For Admin
+  - name: auth
+    description: Authentication endpoints
+  - name: quiz
+    description: Quiz management endpoints
+  - name: question
+    description: Question management endpoints
+
+paths:
+  /user:
+    post:
+      tags:
+        - user
+      summary: Create user.
+      description: This can only be done by admin
+      operationId: createUser
+      requestBody:
+        $ref: "#/components/requestBodies/UserRequestBody"
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "409":
+          description: Duplicate email address
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - jwt_auth: []
+  /user/list:
+    get:
+      tags:
+        - user
+      summary: Get all users.
+      description: Get paginated list of users. This can only be done by admin
+      operationId: getUsers
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/SizeParam"
+        - $ref: "#/components/parameters/SortByParam"
+        - $ref: "#/components/parameters/SortOrderParam"
+        - $ref: "#/components/parameters/SearchParam"
+        - $ref: "#/components/parameters/ProvidersParam"
+        - $ref: "#/components/parameters/StatusesParam"
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginationUserResponse"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - jwt_auth: ["read:pets"]
+  /user/{id}:
+    put:
+      tags:
+        - user
+      summary: Update user.
+      description: Update an existing user. This can only be done by admin
+      operationId: updateUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of user to update
+          schema:
+            type: string
+            format: uuid
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      requestBody:
+        $ref: "#/components/requestBodies/UserRequestBody"
+
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - jwt_auth: []
+    delete:
+      tags:
+        - user
+      summary: Delete user.
+      description: This can only be done by admin
+      operationId: deleteUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of user to delete
+          schema:
+            type: string
+            format: uuid
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "204":
+          description: User deleted successfully
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /user/{id}/ban:
+    patch:
+      tags:
+        - user
+      summary: Ban user.
+      description: Ban or unban a user. This can only be done by admin
+      operationId: banUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of user to ban
+          schema:
+            type: string
+            format: uuid
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: User banned successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - jwt_auth: []
+  /auth/register:
+    post:
+      tags:
+        - auth
+      summary: Register a new user
+      description: Create a new user account
+      operationId: registerUser
+      requestBody:
+        description: User registration data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+          headers:
+            Set-Cookie:
+              description: Refresh token cookie
+              schema:
+                type: string
+                example: "refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Secure; SameSite=None; Path=/; Expires=..."
+        "409":
+          description: User already exists with this email
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: Login user
+      description: Authenticate user and return tokens
+      operationId: loginUser
+      requestBody:
+        description: User login credentials
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: User logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+          headers:
+            Set-Cookie:
+              description: Refresh token cookie
+              schema:
+                type: string
+                example: "refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Secure; SameSite=None; Path=/; Expires=..."
+        "401":
+          description: Invalid credentials or user is banned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /auth/refresh:
+    get:
+      tags:
+        - auth
+      summary: Refresh access token
+      description: Get a new access token using refresh token from cookies
+      operationId: refreshToken
+      parameters:
+        - name: refreshToken
+          in: cookie
+          required: true
+          description: Refresh token stored in httpOnly cookie
+          schema:
+            type: string
+      responses:
+        "200":
+          description: New access token generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: New JWT access token
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzE5YjQwYzc4YjA1YzM5ZmFhNDA2OGYiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTczMDA3OTc1NiwiZXhwIjoxNzMwMDgxNTU2fQ.example"
+                required:
+                  - accessToken
+        "401":
+          description: No refresh token provided or invalid/expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /quiz:
+    post:
+      tags:
+        - quiz
+      summary: Create a new quiz
+      description: Create a new quiz. User must be authenticated.
+      operationId: createQuiz
+      requestBody:
+        description: Quiz data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuizRequest"
+      responses:
+        "201":
+          description: Quiz created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizResponse"
+        "401":
+          description: Unauthorized - User not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - jwt_auth: []
+  /quiz/public/list:
+    get:
+      tags:
+        - quiz
+      summary: Get public quizzes
+      description: Get a paginated list of public quizzes. No authentication required.
+      operationId: getPublicQuizzes
+      parameters:
+        - name: search
+          in: query
+          description: Search term to filter quizzes by title
+          schema:
+            type: string
+            example: "javascript"
+        - name: page
+          in: query
+          description: Page number (0-based)
+          schema:
+            type: integer
+            format: int32
+            default: 0
+            example: 0
+        - name: pageSize
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            format: int32
+            default: 10
+            example: 10
+        - name: tags
+          in: query
+          description: Filter by tags
+          schema:
+            type: array
+            items:
+              type: string
+            example: ["javascript", "react"]
+          style: form
+          explode: true
+        - name: questionType
+          in: query
+          description: Filter quizzes that contain at least one question of this type
+          schema:
+            type: string
+            example: "multiple-choice"
+      responses:
+        "200":
+          description: Public quizzes retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginationQuizResponse"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /quiz/my/list:
+    get:
+      tags:
+        - quiz
+      summary: Get user's quizzes
+      description: Get a paginated list of quizzes created by the authenticated user
+      operationId: getMyQuizzes
+      parameters:
+        - name: search
+          in: query
+          description: Search term to filter quizzes by title
+          schema:
+            type: string
+            example: "javascript"
+        - name: page
+          in: query
+          description: Page number (0-based)
+          schema:
+            type: integer
+            format: int32
+            default: 0
+            example: 0
+        - name: pageSize
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            format: int32
+            default: 10
+            example: 10
+        - name: tags
+          in: query
+          description: Filter by tags
+          schema:
+            type: array
+            items:
+              type: string
+            example: ["javascript", "react"]
+          style: form
+          explode: true
+        - name: questionType
+          in: query
+          description: Filter quizzes that contain at least one question of this type
+          schema:
+            type: string
+            example: "multiple-choice"
+      responses:
+        "200":
+          description: User's quizzes retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginationQuizResponse"
+        "401":
+          description: Unauthorized - User not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - jwt_auth: []
+  /quiz/{id}:
+    get:
+      tags:
+        - quiz
+      summary: Get quiz by ID
+      description: Get a specific quiz by its ID with populated questions
+      operationId: getQuizById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Quiz ID
+          schema:
+            type: string
+            format: uuid
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "200":
+          description: Quiz retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizWithQuestionsResponse"
+        "404":
+          description: Quiz not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized - User not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - jwt_auth: []
+    put:
+      tags:
+        - quiz
+      summary: Update quiz
+      description: Update an existing quiz. Only the quiz owner can update it.
+      operationId: updateQuiz
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Quiz ID
+          schema:
+            type: string
+            format: uuid
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      requestBody:
+        description: Updated quiz data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuizRequest"
+      responses:
+        "200":
+          description: Quiz updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizResponse"
+        "404":
+          description: Quiz not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized - User not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - jwt_auth: []
+    delete:
+      tags:
+        - quiz
+      summary: Delete quiz
+      description: Delete a quiz and all its associated questions. Only the quiz owner can delete it.
+      operationId: deleteQuiz
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Quiz ID
+          schema:
+            type: string
+            format: uuid
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "204":
+          description: Quiz deleted successfully
+        "404":
+          description: Quiz not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized - User not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - jwt_auth: []
+  /question:
+    post:
+      tags:
+        - question
+      summary: Create a new question
+      description: Create a new question for a quiz. User must be authenticated and own the quiz.
+      operationId: createQuestion
+      requestBody:
+        description: Question data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuestionRequest"
+      responses:
+        "201":
+          description: Question created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionResponse"
+        "400":
+          description: Invalid question data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized - User not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden - User does not own the quiz
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - jwt_auth: []
+  /question/{id}:
+    put:
+      tags:
+        - question
+      summary: Update question
+      description: Update an existing question. User must be authenticated and own the quiz.
+      operationId: updateQuestion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Question ID
+          schema:
+            type: string
+            format: uuid
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      requestBody:
+        description: Updated question data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuestionRequest"
+      responses:
+        "200":
+          description: Question updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionResponse"
+        "400":
+          description: Invalid question data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Question not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized - User not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden - User does not own the quiz
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - jwt_auth: []
+    delete:
+      tags:
+        - question
+      summary: Delete question
+      description: Delete a question from a quiz. User must be authenticated and own the quiz.
+      operationId: deleteQuestion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Question ID
+          schema:
+            type: string
+            format: uuid
+            example: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        "204":
+          description: Question deleted successfully
+        "404":
+          description: Question not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized - User not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden - User does not own the quiz
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - jwt_auth: []
+components:
+  schemas:
+    UserResponse:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+
+        fullName:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          example: john@email.com
+        avatar:
+          type: string
+          format: uri
+          example: "https://example.com/avatar.jpg"
+        provider:
+          type: string
+          example: local
+        providerId:
+          type: string
+          example: "1234567890"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-10-01T12:00:00Z"
+          description: Creation date of the user
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2023-10-01T12:00:00Z"
+          description: Last update date of the user
+        lastLogin:
+          type: string
+          format: date-time
+          example: "2023-10-01T12:00:00Z"
+          description: Last login date of the user
+        isBanned:
+          type: boolean
+          example: false
+          description: Indicates if the user is banned
+    UserRequest:
+      type: object
+      properties:
+        fullName:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          example: john@email.com
+        password:
+          type: string
+          example: securePassword123
+        role:
+          type: string
+          example: user
+        avatar:
+          type: string
+          format: uri
+          example: "https://example.com/avatar.jpg"
+
+      required:
+        - fullName
+        - email
+        - password
+    PaginationBase:
+      description: Base pagination object for all paginated responses
+      type: object
+      properties:
+        totalCount:
+          type: integer
+          format: int32
+          example: 100
+        currentPage:
+          type: integer
+          format: int32
+          example: 1
+        totalPages:
+          type: integer
+          format: int32
+          example: 10
+        isFirst:
+          type: boolean
+          example: true
+        isLast:
+          type: boolean
+          example: false
+        isPrevious:
+          type: boolean
+          example: false
+        isNext:
+          type: boolean
+          example: true
+    PaginationUserResponse:
+      description: Paginated response for users
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserResponse"
+        pagination:
+          $ref: "#/components/schemas/PaginationBase"
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+          description: User's email address
+        password:
+          type: string
+          format: password
+          minLength: 6
+          example: "securePassword123"
+          description: Password (minimum 6 characters)
+        confirmPassword:
+          type: string
+          format: password
+          minLength: 6
+          example: "securePassword123"
+          description: Password confirmation (must match password)
+        fullName:
+          type: string
+          minLength: 1
+          example: "John Doe"
+          description: User's full name
+      required:
+        - email
+        - password
+        - confirmPassword
+        - fullName
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+          description: User's email address
+        password:
+          type: string
+          format: password
+          minLength: 6
+          example: "securePassword123"
+          description: User's password
+      required:
+        - email
+        - password
+    AuthResponse:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+          description: User's unique identifier
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+          description: User's email address
+        role:
+          type: string
+          example: "user"
+          description: User's role
+        fullName:
+          type: string
+          example: "John Doe"
+          description: User's full name
+        avatar:
+          anyOf:
+            - type: string
+              format: uri
+            - type: "null"
+          example: "https://example.com/avatar.jpg"
+          description: User's avatar URL (can be null)
+        accessToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzE5YjQwYzc4YjA1YzM5ZmFhNDA2OGYiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTczMDA3OTc1NiwiZXhwIjoxNzMwMDgxNTU2fQ.example"
+          description: JWT access token (expires in 30 minutes)
+      required:
+        - _id
+        - email
+        - role
+        - fullName
+        - accessToken
+    QuizRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          example: "JavaScript Fundamentals Quiz"
+          description: Quiz title (required)
+        description:
+          type: string
+          example: "Test your knowledge of JavaScript basics"
+          description: Quiz description (optional)
+        isPublic:
+          type: boolean
+          default: false
+          example: true
+          description: Whether the quiz is publicly visible
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["javascript", "programming", "web-development"]
+          description: Tags for categorizing the quiz
+      required:
+        - title
+    QuestionRequest:
+      type: object
+      properties:
+        quizId:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+          description: ID of the quiz this question belongs to
+        type:
+          type: string
+          enum:
+            [
+              "multiple_choice",
+              "true_false",
+              "ordering",
+              "short_answer",
+              "poll",
+            ]
+          example: "multiple_choice"
+          description: Type of question
+        content:
+          type: string
+          minLength: 1
+          example: "What is the correct way to declare a variable in JavaScript?"
+          description: The question text
+        media:
+          type: object
+          properties:
+            image:
+              type: string
+              format: uri
+              example: "https://example.com/question-image.jpg"
+              description: Optional image URL for the question
+            video:
+              type: string
+              format: uri
+              example: "https://example.com/question-video.mp4"
+              description: Optional video URL for the question
+          description: Optional media attachments for the question
+        timeLimit:
+          type: integer
+          minimum: 5
+          maximum: 300
+          example: 30
+          description: Time limit for answering the question in seconds (5-300)
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              text:
+                type: string
+                example: "let x = 1"
+                description: Option text
+              isCorrect:
+                type: boolean
+                example: true
+                description: Whether this option is correct (for multiple choice)
+            required:
+              - text
+          example:
+            - text: "var x = 1"
+              isCorrect: false
+            - text: "let x = 1"
+              isCorrect: true
+            - text: "const x = 1"
+              isCorrect: false
+          description: Array of answer options (for multiple choice and true/false questions)
+        correctOrder:
+          type: array
+          items:
+            type: string
+          example: ["First step", "Second step", "Third step"]
+          description: Correct order of items (for ordering questions)
+        answerText:
+          type: string
+          example: "Variables are used to store data"
+          description: Correct answer text (for short answer questions)
+      required:
+        - quizId
+        - type
+        - content
+    QuizResponse:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+          description: Quiz unique identifier
+        title:
+          type: string
+          example: "JavaScript Fundamentals Quiz"
+          description: Quiz title
+        description:
+          type: string
+          example: "Test your knowledge of JavaScript basics"
+          description: Quiz description
+        user:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+          description: ID of the user who created the quiz
+        isPublic:
+          type: boolean
+          example: true
+          description: Whether the quiz is publicly visible
+        questions:
+          type: array
+          items:
+            type: string
+            format: uuid
+          example:
+            [
+              "123e4567-e89b-12d3-a456-426614174001",
+              "123e4567-e89b-12d3-a456-426614174002",
+            ]
+          description: Array of question IDs belonging to this quiz
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["javascript", "programming", "web-development"]
+          description: Tags for categorizing the quiz
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-10-01T12:00:00Z"
+          description: Quiz creation date
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2023-10-01T12:00:00Z"
+          description: Quiz last update date
+      required:
+        - _id
+        - title
+        - user
+        - isPublic
+        - questions
+        - createdAt
+        - updatedAt
+    QuizWithQuestionsResponse:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+          description: Quiz unique identifier
+        title:
+          type: string
+          example: "JavaScript Fundamentals Quiz"
+          description: Quiz title
+        description:
+          type: string
+          example: "Test your knowledge of JavaScript basics"
+          description: Quiz description
+        user:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+          description: ID of the user who created the quiz
+        isPublic:
+          type: boolean
+          example: true
+          description: Whether the quiz is publicly visible
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuestionResponse"
+          description: Array of populated question objects
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["javascript", "programming", "web-development"]
+          description: Tags for categorizing the quiz
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-10-01T12:00:00Z"
+          description: Quiz creation date
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2023-10-01T12:00:00Z"
+          description: Quiz last update date
+      required:
+        - _id
+        - title
+        - user
+        - isPublic
+        - questions
+        - createdAt
+        - updatedAt
+    PaginationQuizResponse:
+      description: Paginated response for quizzes
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuizResponse"
+        pagination:
+          $ref: "#/components/schemas/PaginationBase"
+    QuestionResponse:
+      type: object
+      description: Complete question object with all properties
+      properties:
+        _id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+          description: Question unique identifier
+        quiz:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+          description: ID of the quiz this question belongs to
+        type:
+          type: string
+          enum:
+            [
+              "multiple_choice",
+              "true_false",
+              "ordering",
+              "short_answer",
+              "poll",
+            ]
+          example: "multiple_choice"
+          description: Type of question
+        content:
+          type: string
+          example: "What is the correct way to declare a variable in JavaScript?"
+          description: The question text
+        media:
+          type: object
+          properties:
+            image:
+              type: string
+              format: uri
+              example: "https://example.com/question-image.jpg"
+              description: Image URL for the question
+            video:
+              type: string
+              format: uri
+              example: "https://example.com/question-video.mp4"
+              description: Video URL for the question
+          description: Media attachments for the question
+        timeLimit:
+          type: integer
+          example: 30
+          description: Time limit for answering the question in seconds
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              text:
+                type: string
+                example: "let x = 1"
+                description: Option text
+              isCorrect:
+                type: boolean
+                example: true
+                description: Whether this option is correct
+            required:
+              - text
+          example:
+            - text: "var x = 1"
+              isCorrect: false
+            - text: "let x = 1"
+              isCorrect: true
+            - text: "const x = 1"
+              isCorrect: false
+          description: Array of answer options (for multiple choice and true/false questions)
+        correctOrder:
+          type: array
+          items:
+            type: string
+          example: ["First step", "Second step", "Third step"]
+          description: Correct order of items (for ordering questions)
+        answerText:
+          type: string
+          example: "Variables are used to store data"
+          description: Correct answer text (for short answer questions)
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-10-01T12:00:00Z"
+          description: Question creation date
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2023-10-01T12:00:00Z"
+          description: Question last update date
+      required:
+        - _id
+        - quiz
+        - type
+        - content
+        - timeLimit
+        - createdAt
+        - updatedAt
+    Error:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 400
+        name:
+          type: string
+          example: "BadRequestException"
+        message:
+          type: string
+          example: "Invalid input"
+      required:
+        - code
+        - message
+  requestBodies:
+    UserRequestBody:
+      description: User object that needs to be created or updated
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UserRequest"
+
+  parameters:
+    PageParam:
+      name: currentPage
+      in: query
+      required: false
+      schema:
+        type: integer
+
+        default: 0
+        description: The current page number for pagination
+        example: 1
+    SizeParam:
+      name: pageSize
+      in: query
+      required: false
+      schema:
+        type: integer
+
+        default: 10
+        description: The number of items per page for pagination
+        example: 10
+    SortByParam:
+      name: sortBy
+      in: query
+      required: false
+      schema:
+        type: string
+        default: "createdAt"
+        description: The field to sort by
+        example: "createdAt"
+    SortOrderParam:
+      name: sortOrder
+      in: query
+      required: false
+      schema:
+        type: string
+        default: "desc"
+        description: The order to sort by (asc or desc)
+        example: "desc"
+    SearchParam:
+      name: search
+      in: query
+      required: false
+      schema:
+        type: string
+        description: Search term to filter results
+        example: "john"
+    ProvidersParam:
+      name: providers
+      in: query
+      required: false
+      description: Filter by providers
+      schema:
+        type: array
+        items:
+          type: string
+        example: ["local", "google"]
+      style: form
+      explode: true
+    StatusesParam:
+      name: statuses
+      in: query
+      required: false
+      description: Filter by user statuses
+      schema:
+        type: array
+        items:
+          type: string
+        example: ["active", "banned"]
+      style: form
+      explode: true
+
+  securitySchemes:
+    jwt_auth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
