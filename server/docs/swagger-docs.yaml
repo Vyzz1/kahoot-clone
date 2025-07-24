@@ -6,7 +6,7 @@ info:
     url: https://www.apache.org/licenses/LICENSE-2.0.html
   version: 1.0.12
 servers:
-  - url: http://localhost:8080
+  - url: http://localhost:8080/api
     description: Development server
   - url: https://kahoot-clone.com
     description: Production server
@@ -21,7 +21,7 @@ tags:
     description: Question management endpoints
 
 paths:
-  /user:
+  /users:
     post:
       tags:
         - user
@@ -51,7 +51,7 @@ paths:
                 $ref: "#/components/schemas/Error"
       security:
         - jwt_auth: []
-  /user/list:
+  /users/list:
     get:
       tags:
         - user
@@ -81,7 +81,7 @@ paths:
                 $ref: "#/components/schemas/Error"
       security:
         - jwt_auth: ["read:pets"]
-  /user/{id}:
+  /users/{id}:
     put:
       tags:
         - user
@@ -151,7 +151,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /user/{id}/ban:
+  /users/{id}/ban:
     patch:
       tags:
         - user
@@ -1332,9 +1332,9 @@ components:
       required: false
       schema:
         type: string
-        default: "desc"
-        description: The order to sort by (asc or desc)
-        example: "desc"
+        default: "descend"
+        description: The order to sort by (ascend or descend)
+        example: "descend"
     SearchParam:
       name: search
       in: query
@@ -1364,7 +1364,7 @@ components:
         type: array
         items:
           type: string
-        example: ["active", "banned"]
+        example: ["false", "true"]
       style: form
       explode: true
 

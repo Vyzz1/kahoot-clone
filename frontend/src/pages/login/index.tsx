@@ -38,7 +38,7 @@ export default function LoginPage() {
       }
     } catch (error: any) {
       const errorMessage =
-        error.response?.data?.message || "Registration failed";
+        error.response?.data?.message || "Login failed. Please try again.";
       message.error(errorMessage);
     } finally {
       setLoading(false);

@@ -8,7 +8,6 @@ import useAxiosPrivate from "./useAxiosPrivate";
 import axios from "@/api/axios";
 import type { ApiError } from "@/types/error";
 
-
 export const fetchData = async <T>(
   customAxios: AxiosInstance,
   endpoint: string
@@ -19,14 +18,16 @@ export const fetchData = async <T>(
   } catch (error) {
     const axiosError = error as ApiError;
     throw new Error(
-      axiosError.response?.data?.message || axiosError.message || "Failed to fetch data"
+      axiosError.response?.data?.message ||
+        axiosError.message ||
+        "Failed to fetch data"
     );
   }
 };
 
 interface FetchDataOptions<T>
   extends Omit<UseQueryOptions<T, ApiError>, "queryKey" | "queryFn"> {
-  uniqueKey?: string;
+  uniqueKey?: QueryKey;
   enabled?: boolean;
   type?: "private" | "normal";
 }
@@ -43,10 +44,9 @@ const useFetchData = <T>(
   } = options;
 
   const axiosPrivate = useAxiosPrivate({ type: "private" });
-  const queryKey: QueryKey = uniqueKey ? [endpoint, uniqueKey] : [endpoint];
 
   return useQuery<T, ApiError>({
-    queryKey,
+    queryKey: uniqueKey!,
     queryFn: async () =>
       fetchData<T>(type === "normal" ? axios : axiosPrivate, endpoint),
     enabled,
