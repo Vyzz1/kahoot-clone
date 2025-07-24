@@ -65,7 +65,7 @@ export default function QuestionListByQuiz() {
   const { data, isLoading, error } = useFetchData<PaginationResponse<Question>>(
     `/questions`,
     {
-      uniqueKey: JSON.stringify(questionQueryParams),
+      uniqueKey: [JSON.stringify(questionQueryParams)],
       type: "private",
     }
   );
