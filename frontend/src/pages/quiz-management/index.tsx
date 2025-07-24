@@ -27,7 +27,7 @@ export default function QuizManagement() {
   const { data, isLoading, error } = useFetchData<Pagination<Quiz>>(
     endpoint,
     {
-      uniqueKey: endpoint, // dùng chính endpoint làm key
+      uniqueKey: [endpoint], // dùng chính endpoint làm key
       type: "private",
     }
   );

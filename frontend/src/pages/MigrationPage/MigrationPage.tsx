@@ -24,7 +24,7 @@ export default function MigrationPage() {
     "/migrate/status",
     {
       type: "private", // Đây là endpoint được bảo vệ
-      uniqueKey: "migration-status", // Key duy nhất cho query này
+      uniqueKey: ["migration-status"], // Key duy nhất cho query này
     }
   );
 
