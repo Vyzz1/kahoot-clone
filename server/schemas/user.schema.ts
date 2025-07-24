@@ -25,8 +25,15 @@ export const paginationUserSchema = z.object({
   sortBy: z.string().optional(),
   sortOrder: z.enum(["ascend", "descend"]).default("ascend").optional(),
   search: z.string().optional(),
-  providers: z.array(z.string()).optional(),
-  statuses: z.array(z.string()).or(z.string()).optional(),
+  providers: z.preprocess(
+    (val) => (typeof val === "string" ? [val] : val),
+    z.array(z.string()).optional()
+  ),
+
+  statuses: z.preprocess(
+    (val) => (typeof val === "string" ? [val] : val),
+    z.array(z.string()).optional()
+  ),
 });
 
 // export const paginationUserSchema = z.object({
@@ -46,7 +53,6 @@ export const paginationUserSchema = z.object({
 //   providers: z.union([z.string(), z.array(z.string())]).optional(),
 //   statuses: z.union([z.string(), z.array(z.string())]).optional(),
 // });
-
 
 export type PaginationUserRequest = z.infer<typeof paginationUserSchema>;
 
