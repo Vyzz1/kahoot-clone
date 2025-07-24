@@ -306,7 +306,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /quiz:
+  /quizzes:
     post:
       tags:
         - quiz
@@ -341,7 +341,7 @@ paths:
                 $ref: "#/components/schemas/Error"
       security:
         - jwt_auth: []
-  /quiz/public/list:
+  /quizzes/public/list:
     get:
       tags:
         - quiz
@@ -400,7 +400,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /quiz/my/list:
+  /quizzes/my/list:
     get:
       tags:
         - quiz
@@ -467,7 +467,7 @@ paths:
                 $ref: "#/components/schemas/Error"
       security:
         - jwt_auth: []
-  /quiz/{id}:
+  /quizzes/{id}:
     get:
       tags:
         - quiz
@@ -597,7 +597,7 @@ paths:
                 $ref: "#/components/schemas/Error"
       security:
         - jwt_auth: []
-  /question:
+  /questions:
     post:
       tags:
         - question
@@ -644,7 +644,7 @@ paths:
                 $ref: "#/components/schemas/Error"
       security:
         - jwt_auth: []
-  /question/{id}:
+  /questions/{id}:
     put:
       tags:
         - question
