@@ -35,7 +35,7 @@ const dummyUpload = async (file: File): Promise<string> => {
 export default function QuestionForm({
   onAdd,
   editingQuestion,
-  quizId,
+  // quizId,
   quizOptions = [],
   // Removed disabledQuizSelect = false,
 }: QuestionFormProps) {
@@ -163,11 +163,11 @@ export default function QuestionForm({
       form={form}
       layout="vertical"
       onFinish={onFinish}
-      initialValues={{
-        type: "multiple_choice",
-        timeLimit: 30, // Initial value for timeLimit is set here
-        quizId: quizId || editingQuestion?.quizId, // Set initial quizId if provided or from editingQuestion
-      }}
+      // initialValues={{
+      //   type: "multiple_choice",
+      //   timeLimit: 30, // Initial value for timeLimit is set here
+      //   quizId: quizId || editingQuestion?.quizId, // Set initial quizId if provided or from editingQuestion
+      // }}
     >
       {/* Always render Select Quiz */}
       <Form.Item

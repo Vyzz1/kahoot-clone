@@ -10,7 +10,7 @@ import authRouter from "./routes/auth.route";
 import corsHandler from "./config/corsHandler";
 import quizRouter from './routes/quiz.route';
 import questionRouter from './routes/question.route';
-
+import migrationRouter from './routes/migration.route';
 
 
 dotenv.config();
@@ -27,11 +27,11 @@ app.use(helmet());
 app.use(express.json());
 
 app.use("/api/users", userRouter);
-
 app.use("/api/auth", authRouter);
-
 app.use("/api/quizzes", quizRouter);
 app.use("/api/questions", questionRouter);
+app.use("/api/migrate", migrationRouter);
+
 
 app.use(errorHandler);
 

@@ -22,9 +22,10 @@ class UserService {
 
     const skip = (currentPage - 1) * pageSize;
 
-    const query: any = {
-      role: { $ne: "admin" },
-    };
+    // const query: any = {
+    //   role: { $ne: "admin" },
+    // };
+    const query: any = {};
 
     if (search) {
       query.$or = [

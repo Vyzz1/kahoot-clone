@@ -36,6 +36,13 @@ export default function UserManagement() {
             >
               View Quizzes
             </Button>
+            <Button
+              size="middle"
+              type="default"
+              onClick={() => navigate("/admin/migrate")}
+            >
+              API migration
+            </Button>
             <UserForm isEdit={false} onSubmit={() => {}} />
           </div>
         </Flex>

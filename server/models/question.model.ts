@@ -22,6 +22,7 @@ const questionSchema = new Schema(
     ],
     correctOrder: [String],
     answerText: String,
+    points: { type: Number, default: 1 }, // Thêm trường points để lưu điểm cho câu hỏi
   },
   { timestamps: true }
 );

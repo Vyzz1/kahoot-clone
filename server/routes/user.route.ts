@@ -11,7 +11,7 @@ import userController from "../controllers/user.controller";
 
 const userRouter = Router();
 
-const validateAdmin = [validateJWT, validateRole("user")];
+const validateAdmin = [validateJWT, validateRole("user","admin")];
 
 userRouter.get(
   "/list",
