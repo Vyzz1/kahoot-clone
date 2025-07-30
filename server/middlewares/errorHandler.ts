@@ -14,14 +14,12 @@ export default function errorHandler(
   }
 
   if (error instanceof CustomError) {
-    res.status(error.statusCode).send(error.getJSON());
+    res.status(error.statusCode).send(error.getResponse());
   } else
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-      error: {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        message:
-          getErrorMessage(error) ||
-          "An error occurred. Please view logs for more details",
-      },
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      message:
+        getErrorMessage(error) ||
+        "An error occurred. Please view logs for more details",
     });
 }

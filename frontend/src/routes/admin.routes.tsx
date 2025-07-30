@@ -24,7 +24,7 @@ export const adminRoutes: RouteObject[] = [
     element: <QuizBuilder />,
   },
   {
-    path: "migrate", 
+    path: "migrate",
     element: <MigrationPage />,
   },
 ];

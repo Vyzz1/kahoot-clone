@@ -19,3 +19,12 @@ interface CommonLoginResponse {
     avatar?: string | null;
   };
 }
+
+// Answer types
+interface AnswerData {
+  selectedOptionIndex?: number;
+  booleanAnswer?: boolean;
+  textAnswer?: string;
+  orderAnswer?: string[];
+  pollAnswer?: string;
+}
