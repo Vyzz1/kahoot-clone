@@ -13,9 +13,14 @@ import migrationRouter from "./routes/migration.route";
 import loadEnv, { isProduction } from "./config/env";
 import loadSwaggerDocs, { openSwaggerDocs } from "./docs/step-up";
 import { exit } from "node:process";
-loadEnv();
-const app = express();
+import gameQueueService from "./services/gameQueue.service";
 
+loadEnv();
+
+import "./processors/gamePersistenceProcessor";
+
+import { server, app } from "./lib/socket";
+import gameRouter from "./routes/game.route";
 app.use(corsHandler);
 app.use(compression({ threshold: 1024 }));
 
@@ -30,12 +35,28 @@ app.use("/api/auth", authRouter);
 app.use("/api/quizzes", quizRouter);
 app.use("/api/questions", questionRouter);
 app.use("/api/migrate", migrationRouter);
+app.use("/api/game", gameRouter);
+app.get("/api/queue/health", async (req, res) => {
+  try {
+    const health = await gameQueueService.getQueueHealth();
+    res.json({
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      queue: health,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "unhealthy",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+});
 
 app.use(errorHandler);
 
 const PORT = process.env.PORT as string;
 
-app.listen(PORT, async () => {
+server.listen(PORT, async () => {
   try {
     await connectToDB();
     console.log(`Server is running on port ${PORT}`);

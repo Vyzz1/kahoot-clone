@@ -1,11 +1,17 @@
-import { Schema, model, Types } from "mongoose";
+import { Schema, model, Types, InferSchemaType } from "mongoose";
 
 const questionSchema = new Schema(
   {
     quiz: { type: Types.ObjectId, ref: "Quiz", required: true },
     type: {
       type: String,
-      enum: ["multiple_choice", "true_false", "ordering", "short_answer", "poll"],
+      enum: [
+        "multiple_choice",
+        "true_false",
+        "ordering",
+        "short_answer",
+        "poll",
+      ],
       required: true,
     },
     content: { type: String, required: true },
@@ -22,9 +28,11 @@ const questionSchema = new Schema(
     ],
     correctOrder: [String],
     answerText: String,
-    points: { type: Number, default: 1 }, // Thêm trường points để lưu điểm cho câu hỏi
+    points: { type: Number, default: 1 },
   },
   { timestamps: true }
 );
+
+export type QuestionDocument = InferSchemaType<typeof questionSchema>;
 
 export default model("Question", questionSchema);

@@ -6,23 +6,23 @@ import DeleteConfirm from "@/components/delete-confirm";
 import type { Quiz, Pagination, Question } from "@/types/types";
 import { useNavigate } from "react-router-dom";
 import { EyeOutlined } from "@ant-design/icons";
+import HostQuizzButton from "./host-quizz-btn";
 
 interface QuizTableProps {
   quizzes: Pagination<Quiz>;
   isLoading?: boolean;
-  currentQueryKey: string; // ✅ Thêm prop này để truyền queryKey hiện tại
+  currentQueryKey: string;
 }
 
-export default function QuizTable({ quizzes, isLoading, currentQueryKey }: QuizTableProps) {
+export default function QuizTable({
+  quizzes,
+  isLoading,
+  currentQueryKey,
+}: QuizTableProps) {
   const { setFilters, page, pageSize } = useQuizFilter();
   const navigate = useNavigate();
 
   const columns: TableProps<Quiz>["columns"] = [
-    {
-      key: "stt",
-      title: "STT",
-      render: (text, record, index) => (page ?? 0) * (pageSize ?? 10) + index + 1,
-    },
     {
       key: "title",
       title: "Title",
@@ -54,7 +54,8 @@ export default function QuizTable({ quizzes, isLoading, currentQueryKey }: QuizT
       key: "questionCount",
       title: "Questions",
       dataIndex: "questions",
-      render: (questions: Question[]) => Array.isArray(questions) ? questions.length : 0,
+      render: (questions: Question[]) =>
+        Array.isArray(questions) ? questions.length : 0,
     },
     {
       key: "createdAt",
@@ -67,7 +68,13 @@ export default function QuizTable({ quizzes, isLoading, currentQueryKey }: QuizT
       title: "Actions",
       render: (_, record) => (
         <div className="flex items-center gap-2">
-          <QuizForm isEdit initialValues={record} isDisabled={isLoading} currentQueryKey={currentQueryKey} /> {/* ✅ Truyền currentQueryKey */}
+          <QuizForm
+            isEdit
+            initialValues={record}
+            isDisabled={isLoading}
+            currentQueryKey={currentQueryKey}
+          />{" "}
+          {/* ✅ Truyền currentQueryKey */}
           <Tooltip title="View Questions">
             <Button
               icon={<EyeOutlined />}
@@ -83,9 +90,10 @@ export default function QuizTable({ quizzes, isLoading, currentQueryKey }: QuizT
           <DeleteConfirm
             term={`quiz "${record.title}"`}
             endpoint={`/quizzes/${record._id}`}
-            queryKey={[currentQueryKey]} // ✅ Sử dụng currentQueryKey để invalidate
+            queryKey={[currentQueryKey]}
             onDelete={() => {}}
           />
+          <HostQuizzButton quizzId={record._id} />
         </div>
       ),
     },
@@ -109,7 +117,8 @@ export default function QuizTable({ quizzes, isLoading, currentQueryKey }: QuizT
         current: (page ?? 0) + 1,
         pageSize: pageSize ?? 10,
         showSizeChanger: true,
-        showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
+        showTotal: (total, range) =>
+          `${range[0]}-${range[1]} of ${total} items`,
       }}
       onChange={onChange}
       className="rounded-xl overflow-hidden shadow-md"
