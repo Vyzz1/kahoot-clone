@@ -1,7 +1,7 @@
 declare type CurrentUserType = {
   photoUrl: string;
   name: string;
-  id: number;
+  _id: string;
   role: string;
   email: string;
 };
@@ -52,7 +52,12 @@ export interface Pagination<T> {
   isNext: boolean;
 }
 
-export type QuestionType = "multiple_choice" | "true_false" | "short_answer" | "ordering" | "poll";
+export type QuestionType =
+  | "multiple_choice"
+  | "true_false"
+  | "short_answer"
+  | "ordering"
+  | "poll";
 
 export interface Question {
   _id: string;
@@ -61,7 +66,7 @@ export interface Question {
   // content: string;
   answers: { text: string; isCorrect?: boolean }[]; // dùng cho multiple_choice & true_false
   correctOrder?: string[]; // dùng cho ordering
-  answerText?: string;     // dùng cho short_answer
+  answerText?: string; // dùng cho short_answer
   image?: string;
   video?: string;
   timeLimit: number;
@@ -78,13 +83,9 @@ export interface Quiz {
   createdAt: string;
   updatedAt: string;
   user: string;
-  questions: Question[]; 
-
+  questions: Question[];
 }
 
 // export interface QuizWithQuestions extends Omit<Quiz, "_id" | "createdAt" | "updatedAt" | "user"> {
 //   questions: Question[];
 // }
-
-
-

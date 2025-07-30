@@ -12,7 +12,7 @@ class CustomError extends Error {
     Error.captureStackTrace(this, this.constructor);
   }
 
-  getJSON() {
+  getResponse() {
     return {
       error: true,
       message: this.message,

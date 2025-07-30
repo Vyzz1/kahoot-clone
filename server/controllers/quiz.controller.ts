@@ -2,7 +2,7 @@ import { Response } from "express";
 import { TypedRequest } from "../types/express";
 import { QuizRequest } from "../schemas/quiz.schema";
 import quizService from "../services/quiz.service";
-import { PagedResult } from "../config/paged-result"; 
+import { PagedResult } from "../config/paged-result";
 import Quiz from "../models/quiz.model";
 
 // Assuming Quiz type is imported or defined elsewhere correctly
@@ -29,7 +29,11 @@ class QuizController {
     res: Response
   ) {
     // Pass userId to service to ensure only owner can update
-    const quiz = await quizService.updateQuiz(req.params.id, req.body, req.user!.userId);
+    const quiz = await quizService.updateQuiz(
+      req.params.id,
+      req.body,
+      req.user!.userId
+    );
     res.send(quiz);
   }
 
@@ -42,47 +46,44 @@ class QuizController {
     res.status(204).send();
   }
 
-async getFilteredQuizzes(
-  req: TypedRequest<{
-    TQuery: {
-      search?: string;
-      page?: string;
-      pageSize?: string;
-      tags?: string | string[];
-      questionType?: string;
-      isPublic?: string;
-    };
-  }>,
-  res: Response
-) {
-  const {
-    search,
-    page = "0",
-    pageSize = "10",
-    tags,
-    questionType,
-    isPublic,
-  } = req.query;
+  async getFilteredQuizzes(
+    req: TypedRequest<{
+      TQuery: {
+        search?: string;
+        page?: string;
+        pageSize?: string;
+        tags?: string | string[];
+        questionType?: string;
+        isPublic?: string;
+      };
+    }>,
+    res: Response
+  ) {
+    const {
+      search,
+      page = "0",
+      pageSize = "10",
+      tags,
+      questionType,
+      isPublic,
+    } = req.query;
 
-  const tagArray = typeof tags === "string" ? [tags] : tags;
+    const tagArray = typeof tags === "string" ? [tags] : tags;
 
-  const parsedIsPublic =
-    isPublic === "true" ? true :
-    isPublic === "false" ? false :
-    undefined;
+    const parsedIsPublic =
+      isPublic === "true" ? true : isPublic === "false" ? false : undefined;
 
-  const result = await quizService.getQuizzesWithFilter(
-    search,
-    +page,
-    +pageSize,
-    tagArray,
-    questionType,
-    parsedIsPublic
-  );
+    const result = await quizService.getQuizzesWithFilter(
+      search,
+      +page,
+      +pageSize,
+      tagArray,
+      questionType,
+      parsedIsPublic
+    );
 
-  res.send(result);
-}
-
+    res.send(result);
+  }
 
   async getMyQuizzes(
     req: TypedRequest<{
@@ -106,13 +107,13 @@ async getFilteredQuizzes(
     const tagArray = typeof tags === "string" ? [tags] : tags;
 
     const result = await quizService.getQuizzesByUser(
-      req.user!.userId, // Ensure req.user.userId is available from authentication middleware
+      req.user!.userId,
       search,
       +page,
       +pageSize,
       tagArray,
       questionType
-    ) ;
+    );
 
     res.send(result);
   }
