@@ -23,7 +23,7 @@ import type { Question, Quiz } from "@/types/types"; // Keep this import for Que
 import type { TableProps } from "antd";
 import { useState } from "react";
 import type { Pagination } from "@/types/types";
-// Removed import { Question } from '../../types/global'; as it's redundant/causing confusion
+import { useAuth } from "@/hooks/useAuth";
 
 const { Title } = Typography;
 
@@ -38,19 +38,20 @@ export default function QuestionManagement() {
   const [searchParams] = useSearchParams();
   const quizId = searchParams.get("quizId");
 
+  const { getKey } = useAuth();
   // Fetch questions based on current filters and quizId
   const { data, isLoading, error, refetch } = useFetchData<
     Pagination<Question>
   >(`/questions?${getParamsString()}`, {
     type: "private",
-    uniqueKey: ["/questions", getParamsString()],
+    uniqueKey: ["/questions", getKey(), getParamsString()],
   });
 
   // Fetch quizzes for the dropdown in QuestionForm and for displaying quiz title
   const { data: quizData } = useFetchData<Pagination<Quiz>>(
     "/quizzes/my/list",
     {
-      uniqueKey: ["/quizzes/my/list"],
+      uniqueKey: ["/quizzes/my/list", getKey()],
     }
   );
   const quizOptions =
@@ -237,7 +238,7 @@ export default function QuestionManagement() {
             <Button
               icon={<PlusOutlined />}
               onClick={() => {
-                setEditingQuestion(null); // Ensure no editing question is pre-filled
+                setEditingQuestion(null);
                 setIsModalOpen(true);
               }}
             >
