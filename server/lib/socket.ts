@@ -85,6 +85,15 @@ io.on("connection", (socket) => {
         },
       })
       .exec();
+
+    if (game?.host?.toString() !== userId) {
+      console.error("Unauthorized access to initGame");
+      socket.emit("initGameError", {
+        error: "You are not authorized to initialize this game",
+      });
+      return;
+    }
+
     if (!game) {
       throw new DocumentNotFoundError(`Game with ID ${gameId} does not exist.`);
     }
@@ -127,15 +136,22 @@ io.on("connection", (socket) => {
 
       const game = gameMap.get(gameId);
       if (game) {
-        if (!game.players.some((p) => p.id === player.id)) {
+        if (!game.players.some((p) => p.id === userId)) {
           const newPlayer: Player = {
-            id: player.id,
+            id: userId,
             displayName: player.displayName,
             score: 0,
             answers: [],
             avatar: player.avatar,
           };
           game.players.push(newPlayer);
+        } else {
+          console.log(`Player ${player.displayName} already in game ${gameId}`);
+          socket.emit("joinGameError", {
+            error: "You are already in this game",
+          });
+
+          return;
         }
 
         socket.join(gameId);

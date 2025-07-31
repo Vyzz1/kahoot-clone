@@ -1,6 +1,7 @@
 import { useSocket } from "@/hooks/useSocket";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { message } from "antd";
 
 function OwnerHostQuizzPage() {
   const [isInitGame, setIsInitGame] = useState(false);
@@ -8,12 +9,13 @@ function OwnerHostQuizzPage() {
   const [totalQuestion, setTotalQuestion] = useState(0);
   const [pin, setPin] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [hasInitError, setHasInitError] = useState(false);
   const [params] = useSearchParams();
   const socket = useSocket();
 
-  const [player, setPlayer] = useState<{ id: string; displayName: string }[]>(
-    []
-  );
+  const [player, setPlayer] = useState<
+    { id: string; displayName: string; avatar: string | null }[]
+  >([]);
 
   const shouldShowWaiting = isInitialized && isConnected;
 
@@ -29,9 +31,18 @@ function OwnerHostQuizzPage() {
       console.log("Game Initialized:", data);
       setIsInitGame(true);
       setIsInitialized(true);
+      setHasInitError(false);
       setTotalQuestion(data.totalQuestion);
       setPlayer(data.players || []);
       setPin(data.pin);
+    };
+
+    const handleInitGameError = (data: any) => {
+      console.error("❌ Init game error:", data);
+      message.error(data.error || "Failed to initialize game");
+      setIsInitGame(false);
+      setIsInitialized(false);
+      setHasInitError(true);
     };
 
     const handleDisconnect = () => {
@@ -51,6 +62,7 @@ function OwnerHostQuizzPage() {
 
     socket.on("connect", handleConnect);
     socket.on("gameInitialized", handleGameInitialized);
+    socket.on("initGameError", handleInitGameError);
     socket.on("disconnect", handleDisconnect);
     socket.on("gameUpdate", (data) => {
       console.log("Game Update received:", data);
@@ -69,6 +81,7 @@ function OwnerHostQuizzPage() {
     return () => {
       socket.off("connect", handleConnect);
       socket.off("gameInitialized", handleGameInitialized);
+      socket.off("initGameError", handleInitGameError);
       socket.off("disconnect", handleDisconnect);
       socket.off("gameUpdate");
       socket.off("gameStarted", handleGameStarted);
@@ -77,14 +90,18 @@ function OwnerHostQuizzPage() {
   }, [socket]);
 
   useEffect(() => {
-    if (isConnected && !isInitGame && socket && params.get("gameId")) {
+    if (
+      isConnected &&
+      !isInitGame &&
+      socket &&
+      params.get("gameId") &&
+      !hasInitError
+    ) {
       console.log("Initializing game with ID:", params.get("gameId"));
       socket.emit("initGame", { gameId: params.get("gameId") });
       setIsInitGame(true);
     }
-  }, [isConnected, isInitGame, socket, params]);
-
-  console.log(shouldShowWaiting);
+  }, [isConnected, isInitGame, socket, params, hasInitError]);
 
   const handleStartGame = () => {
     if (socket && params.get("gameId")) {
@@ -162,13 +179,17 @@ function OwnerHostQuizzPage() {
                 Players in Lobby ({player.length})
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {player.map((p, index) => (
+                {player.map((p) => (
                   <div
                     key={p.id}
                     className="flex items-center p-3 bg-gray-50 rounded-lg border"
                   >
                     <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-medium mr-3">
-                      {index + 1}
+                      <img
+                        src={p.avatar || "/default-avatar.png"}
+                        alt="Avatar"
+                        className="w-full h-full rounded-full"
+                      />
                     </div>
                     <div className="flex-1">
                       <div className="font-medium">{p.displayName}</div>
@@ -199,13 +220,28 @@ function OwnerHostQuizzPage() {
         </div>
       )}
 
-      {!shouldShowWaiting && (
+      {!shouldShowWaiting && !hasInitError && (
         <div className="text-center py-8">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
             <div className="text-blue-800">
               {!isConnected
-                ? "Connecting to server..."
-                : " Initializing game..."}
+                ? "🔌 Connecting to server..."
+                : "🎯 Initializing game..."}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {hasInitError && (
+        <div className="text-center py-8">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+            <div className="text-red-800">
+              <h3 className="font-medium mb-2">
+                ❌ Game Initialization Failed
+              </h3>
+              <p className="text-sm mb-4">
+                You are not authorized to host this game or the game doesn't
+              </p>
             </div>
           </div>
         </div>
