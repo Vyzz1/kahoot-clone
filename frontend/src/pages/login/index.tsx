@@ -4,7 +4,7 @@ import { FacebookOutlined, GoogleOutlined } from "@ant-design/icons";
 import { Button, Card, Form, Input, message } from "antd";
 import { Typography } from "antd";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const { Title } = Typography;
 type RegisterField = {
@@ -16,6 +16,10 @@ type RegisterField = {
 
 export default function LoginPage() {
   const { setAuth, updateCurrentUser } = useAuth();
+
+  const location = useLocation();
+
+  const from = location.state?.from?.pathname || "/admin/user-management";
 
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -34,7 +38,7 @@ export default function LoginPage() {
         });
 
         updateCurrentUser(data);
-        navigate("/admin/user-management");
+        navigate(from, { replace: true });
       }
     } catch (error: any) {
       const errorMessage =
