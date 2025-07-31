@@ -7,7 +7,7 @@ export interface QuestionFilters {
   page?: number;
   pageSize?: number;
   sortBy?: string;
-  sortOrder?: "asc" | "desc" | undefined; 
+  sortOrder?: "asc" | "desc" | undefined;
   type?: string;
   quizId?: string;
 }
@@ -19,7 +19,8 @@ export function useQuestionFilter() {
   const page = parseInt(searchParams.get("page") || "0", 10);
   const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
   const sortBy = searchParams.get("sortBy") || "";
-  const sortOrder = (searchParams.get("sortOrder") as "ascend" | "descend") || undefined;
+  const sortOrder =
+    (searchParams.get("sortOrder") as "asc" | "desc") || undefined;
   const type = searchParams.get("type") || "";
   const quizId = searchParams.get("quizId") || ""; // Lấy quizId từ URL
 
@@ -55,22 +56,31 @@ export function useQuestionFilter() {
   }, [search, page, pageSize, sortBy, sortOrder, type, quizId]);
 
   const deleteAllFilters = useCallback(() => {
-    setSearchParams(() => new URLSearchParams());
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams();
+      // Preserve quizId when resetting filters
+      const currentQuizId = prev.get("quizId");
+      if (currentQuizId) {
+        newParams.set("quizId", currentQuizId);
+      }
+      return newParams;
+    });
   }, [setSearchParams]);
 
-  const shouldResetFilters = Array.from(searchParams.entries()).some(
-    ([key]) => !["page", "pageSize"].includes(key)
-  );
+  const shouldResetFilters =
+    Array.from(searchParams.entries()).length > 0 &&
+    Array.from(searchParams.entries()).some(
+      ([key]) => !["page", "pageSize", "quizId"].includes(key)
+    );
 
   const filters: QuestionFilters = {
-  search,
-  page,
-  pageSize,
-  sortBy,
-  type,
-  quizId,
-};
-
+    search,
+    page,
+    pageSize,
+    sortBy,
+    type,
+    quizId,
+  };
 
   return {
     search,
