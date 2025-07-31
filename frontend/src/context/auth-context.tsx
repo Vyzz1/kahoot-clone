@@ -13,6 +13,7 @@ type AuthContextType = {
   deleteCurrentUser: () => void;
   isLoggedOut: boolean;
   setIsLoggedOut: React.Dispatch<React.SetStateAction<boolean>>;
+  getKey: () => string;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -23,6 +24,7 @@ const AuthContext = createContext<AuthContextType>({
   deleteCurrentUser: () => {},
   isLoggedOut: false,
   setIsLoggedOut: () => {},
+  getKey: () => "",
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -44,10 +46,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.removeItem("user");
     setIsLoggedOut(true);
   };
+  const getKey = () => {
+    return `${currentUser?._id.slice(0, 8)}`;
+  };
 
   return (
     <AuthContext.Provider
       value={{
+        getKey,
         auth,
         setAuth,
         currentUser,
