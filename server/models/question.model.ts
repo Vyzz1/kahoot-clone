@@ -29,6 +29,8 @@ const questionSchema = new Schema(
     correctOrder: [String],
     answerText: String,
     points: { type: Number, default: 1 },
+
+    user: { type: Types.ObjectId, ref: "User", required: true },
   },
   { timestamps: true }
 );

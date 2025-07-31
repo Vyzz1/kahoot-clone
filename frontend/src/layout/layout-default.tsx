@@ -1,14 +1,13 @@
 import { Outlet } from "react-router-dom";
+import Header from "@/components/header";
 
 const LayoutDefault = () => {
   return (
     <div className="antialiased">
-      <div>Header</div>
+      <Header />
       <main className="min-h-screen ">
         <Outlet />
       </main>
-
-      <div>Footer</div>
     </div>
   );
 };

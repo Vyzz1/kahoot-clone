@@ -21,6 +21,7 @@ import "./processors/gamePersistenceProcessor";
 
 import { server, app } from "./lib/socket";
 import gameRouter from "./routes/game.route";
+import questionModel from "./models/question.model";
 app.use(corsHandler);
 app.use(compression({ threshold: 1024 }));
 
@@ -59,6 +60,7 @@ const PORT = process.env.PORT as string;
 server.listen(PORT, async () => {
   try {
     await connectToDB();
+
     console.log(`Server is running on port ${PORT}`);
 
     if (!isProduction) {

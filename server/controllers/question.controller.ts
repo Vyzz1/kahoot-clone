@@ -4,7 +4,7 @@ import { QuestionRequest } from "../schemas/question.schema";
 import questionService from "../services/question.service";
 
 class QuestionController {
-  async getAllQuestions(
+  async getMyQuestions(
     req: TypedRequest<{
       TQuery: {
         page?: string;
@@ -27,15 +27,18 @@ class QuestionController {
       sortOrder, // Lấy sortOrder từ query
     } = req.query;
 
-    const result = await questionService.getAllQuestions({
-      page: parseInt(page),
-      pageSize: parseInt(pageSize),
-      search,
-      type,
-      quizId: req.query.quizId,
-      sortBy, // Truyền sortBy vào service
-      sortOrder, // Truyền sortOrder vào service
-    });
+    const result = await questionService.getAllQuestions(
+      {
+        page: parseInt(page),
+        pageSize: parseInt(pageSize),
+        search,
+        type,
+        quizId: req.query.quizId,
+        sortBy, // Truyền sortBy vào service
+        sortOrder, // Truyền sortOrder vào service
+      },
+      req.user!.email
+    );
 
     res.send(result.response);
   }
@@ -44,7 +47,10 @@ class QuestionController {
     req: TypedRequest<{ TBody: QuestionRequest }>,
     res: Response
   ) {
-    const question = await questionService.createQuestion(req.body);
+    const question = await questionService.createQuestion(
+      req.body,
+      req.user!.email
+    );
     res.status(201).send(question);
   }
 

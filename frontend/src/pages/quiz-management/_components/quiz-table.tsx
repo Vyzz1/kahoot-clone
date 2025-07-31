@@ -32,7 +32,7 @@ export default function QuizTable({
           className="text-blue-600 hover:underline cursor-pointer font-medium"
           onClick={(e) => {
             e.stopPropagation();
-            navigate(`/admin/question-management?quizId=${record._id}`);
+            navigate(`/settings/question-management?quizId=${record._id}`);
           }}
         >
           {text}
@@ -81,7 +81,7 @@ export default function QuizTable({
               size="small"
               onClick={(e) => {
                 e.stopPropagation();
-                navigate(`/admin/question-management?quizId=${record._id}`);
+                navigate(`/settings/question-management?quizId=${record._id}`);
               }}
               className="rounded-md shadow-sm hover:shadow-md transition-all"
               disabled={isLoading}

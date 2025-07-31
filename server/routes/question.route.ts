@@ -7,11 +7,7 @@ import { validateQuizUsership } from "../middlewares/validate-quiz-usership";
 
 const questionRouter = Router();
 
-questionRouter.get(
-  "/",
-  validateJWT,
-  questionController.getAllQuestions
-);
+questionRouter.get("/", validateJWT, questionController.getMyQuestions);
 
 questionRouter.post(
   "/",

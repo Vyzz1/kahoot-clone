@@ -6,11 +6,20 @@ import QuestionManagement from "@/pages/question-management";
 import QuizBuilder from "@/pages/quiz-builder";
 import MigrationPage from "@/pages/MigrationPage/MigrationPage";
 
-export const adminRoutes: RouteObject[] = [
+// Admin-only routes (user-management and migration)
+export const adminOnlyRoutes: RouteObject[] = [
   {
     path: "user-management",
     element: <UserManagement />,
   },
+  {
+    path: "migrate",
+    element: <MigrationPage />,
+  },
+];
+
+// Settings routes (accessible by both admin and user)
+export const settingsRoutes: RouteObject[] = [
   {
     path: "quiz-management",
     element: <QuizManagement />,
@@ -23,8 +32,10 @@ export const adminRoutes: RouteObject[] = [
     path: "quiz-builder",
     element: <QuizBuilder />,
   },
-  {
-    path: "migrate",
-    element: <MigrationPage />,
-  },
+];
+
+// Legacy admin routes for backward compatibility
+export const adminRoutes: RouteObject[] = [
+  ...adminOnlyRoutes,
+  ...settingsRoutes,
 ];
