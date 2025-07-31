@@ -34,7 +34,7 @@ export default function UserManagement() {
             <Button
               size="middle"
               type="default"
-              onClick={() => navigate("/admin/quiz-management")}
+              onClick={() => navigate("/settings/quiz-management")}
             >
               View Quizzes
             </Button>

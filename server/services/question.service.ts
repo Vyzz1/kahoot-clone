@@ -2,34 +2,45 @@ import Question from "../models/question.model";
 import Quiz from "../models/quiz.model";
 import { PagedResult } from "../config/paged-result";
 import { DocumentNotFoundError, ForbiddenError } from "../error/customError";
+import User from "../models/user.model";
 
 interface GetAllQuestionsParams {
   page: number;
   pageSize: number;
   search?: string;
   type?: string;
-  quizId?: string ;
+  quizId?: string;
   sortBy?: string;
   sortOrder?: string;
 }
 
-const getAllQuestions = async ({
-  page,
-  pageSize,
-  search = "",
-  type,
-  quizId,
-  sortBy,
-  sortOrder,
-}: GetAllQuestionsParams) => {
+const getMyQuestion = async (
+  {
+    page,
+    pageSize,
+    search = "",
+    type,
+    quizId,
+    sortBy,
+    sortOrder,
+  }: GetAllQuestionsParams,
+  email: string
+) => {
+  const user = await User.findByEmail(email);
+  if (!user) {
+    throw new DocumentNotFoundError("User not found.");
+  }
   const filter: Record<string, any> = {};
+
+  filter.user = user._id;
+
   if (search) filter.content = { $regex: search, $options: "i" };
   if (type) filter.type = type;
   if (quizId) filter.quiz = quizId;
 
   const sort: Record<string, any> = {};
   if (sortBy) {
-    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    sort[sortBy] = sortOrder === "desc" ? -1 : 1;
   } else {
     sort.createdAt = -1;
   }
@@ -40,20 +51,26 @@ const getAllQuestions = async ({
     .limit(pageSize)
     .sort(sort);
 
-  // LOG THIS TO CONFIRM THE PAGE VALUE BEFORE PagedResult
-  console.log('Backend Service - Page value before PagedResult:', page);
-
   return new PagedResult(data, total, page, pageSize);
 };
 
-const createQuestion = async (data: any) => {
+const createQuestion = async (data: any, email: string) => {
+  const user = await User.findByEmail(email);
+  if (!user) {
+    throw new DocumentNotFoundError("User not found.");
+  }
+
   const { quizId, ...rest } = data;
   const existingQuiz = await Quiz.findById(quizId);
   if (!existingQuiz) {
     throw new DocumentNotFoundError("Quiz not found for this question.");
   }
 
-  const question = await Question.create({ ...rest, quiz: quizId });
+  const question = await Question.create({
+    ...rest,
+    quiz: quizId,
+    user: user._id,
+  });
   await Quiz.findByIdAndUpdate(quizId, {
     $push: { questions: question._id },
   });
@@ -100,7 +117,9 @@ const deleteQuestion = async (id: string, userId: string) => {
 
   const parentQuiz = await Quiz.findOne({ _id: question.quiz, user: userId });
   if (!parentQuiz) {
-    throw new ForbiddenError("You do not have permission to delete questions from this quiz.");
+    throw new ForbiddenError(
+      "You do not have permission to delete questions from this quiz."
+    );
   }
 
   const deletedQuestion = await Question.findByIdAndDelete(id);
@@ -115,5 +134,5 @@ export default {
   createQuestion,
   updateQuestion,
   deleteQuestion,
-  getAllQuestions,
+  getAllQuestions: getMyQuestion,
 };

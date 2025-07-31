@@ -1,73 +1,3 @@
-// // src/layout/AdminLayout.tsx
-// import { Layout, Menu } from "antd";
-// import {
-//   AppstoreOutlined,
-//   FileTextOutlined,
-//   PlusCircleOutlined,
-//   DatabaseOutlined, // ✅ Import DatabaseOutlined
-//   UserOutlined, // Import UserOutlined for User Management
-// } from "@ant-design/icons";
-// import { Link, Outlet, useLocation } from "react-router-dom";
-
-// const { Header, Content, Sider } = Layout;
-
-// const adminNav = [
-//   {
-//     key: "/admin/user-management", // ✅ Thêm key cho User Management
-//     label: <Link to="/admin/user-management">User Management</Link>, // ✅ Thêm User Management
-//     icon: <UserOutlined />, // ✅ Icon cho User Management
-//   },
-//   {
-//     key: "/admin/quiz-management",
-//     label: <Link to="/admin/quiz-management">Quiz Management</Link>,
-//     icon: <AppstoreOutlined />,
-//   },
-//   {
-//     key: "/admin/question-management",
-//     label: <Link to="/admin/question-management">Question Management</Link>,
-//     icon: <FileTextOutlined />,
-//   },
-//   {
-//     key: "/admin/quiz-builder",
-//     label: <Link to="/admin/quiz-builder">Quiz Builder</Link>,
-//     icon: <PlusCircleOutlined />,
-//   },
-//   {
-//     key: "/admin/migrate", // ✅ Thêm key cho API Migration
-//     label: <Link to="/admin/migrate">API Migration</Link>, // ✅ Thêm API Migration
-//     icon: <DatabaseOutlined />, // ✅ Sử dụng icon DatabaseOutlined
-//   },
-// ];
-
-// export default function AdminLayout() {
-//   const location = useLocation();
-
-//   return (
-//     <Layout style={{ minHeight: "100vh" }}>
-//       <Sider breakpoint="lg" collapsedWidth="0">
-//         <div className="text-white text-lg text-center my-6 font-bold">Admin Panel</div>
-//         <Menu
-//           theme="dark"
-//           mode="inline"
-//           selectedKeys={[location.pathname]}
-//           items={adminNav}
-//         />
-//       </Sider>
-//       <Layout>
-//         <Header style={{ padding: 0, background: "#fff" }} className="px-5">
-//           <div className="text-xl font-semibold text-gray-700">Quiz Admin Dashboard</div>
-//         </Header>
-//         <Content style={{ margin: "24px 16px 0", overflow: "initial" }}>
-//           {/* Outlet sẽ render các tuyến đường con tại đây */}
-//           <Outlet />
-//         </Content>
-//         {/* Có thể thêm Footer tại đây nếu cần */}
-//       </Layout>
-//     </Layout>
-//   );
-// }
-
-// src/layout/AdminLayout.tsx
 import { Layout, Menu } from "antd";
 import {
   AppstoreOutlined,
@@ -77,68 +7,75 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth"; 
+import { useAuth } from "@/hooks/useAuth";
 
-const { Header, Content, Sider } = Layout;
+const { Content, Sider } = Layout;
 
-// Định nghĩa tất cả các mục điều hướng
 const allAdminNavItems = [
   {
     key: "/admin/user-management",
     label: <Link to="/admin/user-management">User Management</Link>,
     icon: <UserOutlined />,
-    roles: ["admin"], // ✅ Chỉ admin mới thấy mục này
+    roles: ["admin"],
   },
   {
-    key: "/admin/quiz-management",
-    label: <Link to="/admin/quiz-management">Quiz Management</Link>,
+    key: "/settings/quiz-management",
+    label: <Link to="/settings/quiz-management">Quiz Management</Link>,
     icon: <AppstoreOutlined />,
-    roles: ["admin", "user"], // ✅ Admin và User đều thấy
+    roles: ["admin", "user"],
   },
   {
-    key: "/admin/question-management",
-    label: <Link to="/admin/question-management">Question Management</Link>,
+    key: "/settings/question-management",
+    label: <Link to="/settings/question-management">Question Management</Link>,
     icon: <FileTextOutlined />,
-    roles: ["admin", "user"], // ✅ Admin và User đều thấy
+    roles: ["admin", "user"],
   },
   {
-    key: "/admin/quiz-builder",
-    label: <Link to="/admin/quiz-builder">Quiz Builder</Link>,
+    key: "/settings/quiz-builder",
+    label: <Link to="/settings/quiz-builder">Quiz Builder</Link>,
     icon: <PlusCircleOutlined />,
-    roles: ["admin", "user"], // ✅ Admin và User đều thấy
+    roles: ["admin", "user"],
   },
   {
     key: "/admin/migrate",
     label: <Link to="/admin/migrate">API Migration</Link>,
     icon: <DatabaseOutlined />,
-    roles: ["admin"], // ✅ Chỉ admin mới thấy mục này
+    roles: ["admin"],
   },
 ];
 
 export default function AdminLayout() {
   const location = useLocation();
-  const { currentUser } = useAuth(); // Lấy thông tin người dùng hiện tại từ AuthContext
-
-  // Lọc các mục điều hướng dựa trên vai trò của người dùng
-  const filteredAdminNav = allAdminNavItems.filter(item =>
-    item.roles.includes(currentUser?.role || "") // Nếu currentUser hoặc role không tồn tại, sẽ không khớp
+  const { currentUser } = useAuth();
+  const filteredAdminNav = allAdminNavItems.filter((item) =>
+    item.roles.includes(currentUser?.role || "")
   );
+
+  const isAdminRoute = location.pathname.startsWith("/admin");
+  const panelTitle = isAdminRoute ? "Admin Panel" : "Settings";
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      <Sider breakpoint="lg" collapsedWidth="0">
-        <div className="text-white text-lg text-center my-6 font-bold">Admin Panel</div>
+      <Sider
+        breakpoint="lg"
+        collapsedWidth="0"
+        style={{
+          background: "#fff",
+          borderRight: "1px solid #f0f0f0",
+        }}
+      >
+        <div className="text-gray-800 text-lg text-center my-6 font-bold border-b border-gray-200 pb-4">
+          {panelTitle}
+        </div>
         <Menu
-          theme="dark"
+          theme="light"
           mode="inline"
           selectedKeys={[location.pathname]}
-          items={filteredAdminNav} 
+          items={filteredAdminNav}
+          style={{ borderRight: "none" }}
         />
       </Sider>
       <Layout>
-        <Header style={{ padding: 0, background: "#fff" }} className="px-5">
-          <div className="text-xl font-semibold text-gray-700">Quiz Admin Dashboard</div>
-        </Header>
         <Content style={{ margin: "24px 16px 0", overflow: "initial" }}>
           <Outlet />
         </Content>

@@ -11,7 +11,17 @@ const { Title } = Typography;
 
 export default function QuizManagement() {
   const navigate = useNavigate();
-  const { search, page, pageSize, tags, questionType, isPublic, shouldResetFilters, deleteAllFilters, setFilters } = useQuizFilter();
+  const {
+    search,
+    page,
+    pageSize,
+    tags,
+    questionType,
+    isPublic,
+    shouldResetFilters,
+    deleteAllFilters,
+    setFilters,
+  } = useQuizFilter();
 
   const queryParams = new URLSearchParams({
     page: String(page ?? 0),
@@ -22,15 +32,12 @@ export default function QuizManagement() {
     ...(isPublic !== "all" ? { isPublic: String(isPublic) } : {}),
   }).toString();
 
-  const endpoint = `/quizzes?${queryParams}`;
+  const endpoint = `/quizzes/my/list?${queryParams}`;
 
-  const { data, isLoading, error } = useFetchData<Pagination<Quiz>>(
-    endpoint,
-    {
-      uniqueKey: [endpoint], // dùng chính endpoint làm key
-      type: "private",
-    }
-  );
+  const { data, isLoading, error } = useFetchData<Pagination<Quiz>>(endpoint, {
+    uniqueKey: [endpoint], // dùng chính endpoint làm key
+    type: "private",
+  });
 
   const handleVisibilityChange = (value: string) => {
     setFilters({ isPublic: value, page: 0 });
@@ -40,24 +47,30 @@ export default function QuizManagement() {
     <section className="p-0 bg-gray-50 min-h-screen">
       <div className="max-w-screen-xl mx-auto space-y-8 p-4 md:p-6">
         {/* Header */}
-        <Flex justify="space-between" align="center" wrap="wrap" gap="middle" className="bg-white p-6 rounded-xl shadow-md">
+        <Flex
+          justify="space-between"
+          align="center"
+          wrap="wrap"
+          gap="middle"
+          className="bg-white p-6 rounded-xl shadow-md"
+        >
           <Title level={3} className="m-0 text-gray-800">
             📚 Quiz Management
           </Title>
           <Flex wrap gap="small">
             <Button
-              onClick={() => navigate("/admin/quiz-builder")}
+              onClick={() => navigate("/settings/quiz-builder")}
               className="rounded-md shadow-sm hover:shadow-md transition-all"
             >
               Go to Builder
             </Button>
             <Button
-              onClick={() => navigate("/admin/question-management")}
+              onClick={() => navigate("/settings/question-management")}
               className="rounded-md shadow-sm hover:shadow-md transition-all"
             >
               Manage Questions
             </Button>
-            <QuizForm isEdit={false} currentQueryKey={endpoint} /> 
+            <QuizForm isEdit={false} currentQueryKey={endpoint} />
           </Flex>
         </Flex>
 
@@ -68,7 +81,9 @@ export default function QuizManagement() {
             placeholder="Filter by Visibility"
             style={{ width: 180 }}
             onChange={handleVisibilityChange}
-            value={isPublic === true ? "true" : isPublic === false ? "false" : "all"}
+            value={
+              isPublic === true ? "true" : isPublic === false ? "false" : "all"
+            }
             className="rounded-md shadow-sm"
             options={[
               { value: "all", label: "All Visibility" },
@@ -98,7 +113,11 @@ export default function QuizManagement() {
               {error.response?.data?.message || "Failed to load quizzes!"}
             </div>
           ) : data && data.content.length > 0 ? (
-            <QuizTable quizzes={data} isLoading={isLoading} currentQueryKey={endpoint} /> 
+            <QuizTable
+              quizzes={data}
+              isLoading={isLoading}
+              currentQueryKey={endpoint}
+            />
           ) : (
             <Empty description="No quizzes found." className="py-12" />
           )}

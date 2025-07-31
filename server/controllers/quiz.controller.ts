@@ -2,11 +2,6 @@ import { Response } from "express";
 import { TypedRequest } from "../types/express";
 import { QuizRequest } from "../schemas/quiz.schema";
 import quizService from "../services/quiz.service";
-import { PagedResult } from "../config/paged-result";
-import Quiz from "../models/quiz.model";
-
-// Assuming Quiz type is imported or defined elsewhere correctly
-type QuizType = typeof Quiz.prototype; // Renamed to avoid conflict with interface Quiz
 
 class QuizController {
   async createQuiz(req: TypedRequest<{ TBody: QuizRequest }>, res: Response) {

@@ -20,7 +20,13 @@ type QuizFormFields = {
   isPublic: boolean;
 };
 
-export default function QuizForm({ isEdit, initialValues, onSubmit, isDisabled = false, currentQueryKey }: QuizFormProps) {
+export default function QuizForm({
+  isEdit,
+  initialValues,
+  onSubmit,
+  isDisabled = false,
+  currentQueryKey,
+}: QuizFormProps) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const [form] = useForm<QuizFormFields>();
@@ -53,9 +59,11 @@ export default function QuizForm({ isEdit, initialValues, onSubmit, isDisabled =
     form.resetFields();
     if (onSubmit) onSubmit(newQuiz);
     setTimeout(() => {
-      message.success(isEdit ? "Quiz updated successfully!" : "Quiz created successfully!");
+      message.success(
+        isEdit ? "Quiz updated successfully!" : "Quiz created successfully!"
+      );
       if (!isEdit && newQuiz._id) {
-        navigate(`/admin/question-management?quizId=${newQuiz._id}`);
+        navigate(`/settings/question-management?quizId=${newQuiz._id}`);
       }
     }, 300);
   };
@@ -64,11 +72,11 @@ export default function QuizForm({ isEdit, initialValues, onSubmit, isDisabled =
     message.error(error.response?.data?.message || "An error occurred!");
   };
 
-  const { mutate, isPending } = useSubmitData('', onSuccess, onError);
+  const { mutate, isPending } = useSubmitData("", onSuccess, onError);
 
   const handleFinish = (values: QuizFormFields) => {
     const submit = () => {
-      const endpoint = isEdit ? `/quizzes/${initialValues?._id}` : '/quizzes';
+      const endpoint = isEdit ? `/quizzes/${initialValues?._id}` : "/quizzes";
       mutate({
         data: values,
         type: isEdit ? "put" : "post",
@@ -128,7 +136,10 @@ export default function QuizForm({ isEdit, initialValues, onSubmit, isDisabled =
           </Form.Item>
 
           <Form.Item label="Description" name="description">
-            <Input.TextArea placeholder="Add an optional description..." rows={3} />
+            <Input.TextArea
+              placeholder="Add an optional description..."
+              rows={3}
+            />
           </Form.Item>
 
           <Form.Item label="Public" name="isPublic" valuePropName="checked">

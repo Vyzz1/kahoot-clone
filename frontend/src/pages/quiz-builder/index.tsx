@@ -58,17 +58,25 @@ export default function QuizBuilder() {
   useEffect(() => {
     const hasQuestions = quizInfo.questions && quizInfo.questions.length > 0;
     const hasTitle = quizInfo.title.trim() !== "";
-    const hasValidTimeLimit = quizInfo.quizTimeLimit !== undefined && quizInfo.quizTimeLimit > 0;
+    const hasValidTimeLimit =
+      quizInfo.quizTimeLimit !== undefined && quizInfo.quizTimeLimit > 0;
 
     console.log("--- Save Quiz Button Disabled Conditions ---");
     console.log("Has questions:", hasQuestions);
     console.log("Has title:", hasTitle);
     console.log("Has valid time limit:", hasValidTimeLimit);
     // Updated disabled state check: user check is removed for testing
-    console.log("Button disabled state:", !(hasQuestions && hasTitle && hasValidTimeLimit));
+    console.log(
+      "Button disabled state:",
+      !(hasQuestions && hasTitle && hasValidTimeLimit)
+    );
     console.log("------------------------------------------");
-  }, [quizInfo.questions, quizInfo.title, quizInfo.user, quizInfo.quizTimeLimit]);
-
+  }, [
+    quizInfo.questions,
+    quizInfo.title,
+    quizInfo.user,
+    quizInfo.quizTimeLimit,
+  ]);
 
   const addOrUpdateQuestion = (question: Question) => {
     setQuizInfo((prev) => {
@@ -90,7 +98,7 @@ export default function QuizBuilder() {
   };
 
   const handleReorderQuestions = (newOrder: Question[]) => {
-    setQuizInfo(prev => ({
+    setQuizInfo((prev) => ({
       ...prev,
       questions: newOrder,
     }));
@@ -121,15 +129,15 @@ export default function QuizBuilder() {
     saveQuiz(quizInfo, {
       onSuccess: (createdQuiz) => {
         message.success("Quiz saved successfully!");
-        setQuizInfo(prev => ({
+        setQuizInfo((prev) => ({
           ...prev,
           _id: createdQuiz._id,
-          questions: prev.questions.map(q => ({
+          questions: prev.questions.map((q) => ({
             ...q,
             quizId: createdQuiz._id,
-          }))
+          })),
         }));
-        navigate("/admin/quiz-management");
+        navigate("/settings/quiz-management");
       },
       onError: (err: any) => {
         console.error("Failed to save quiz:", err.response || err);
@@ -147,13 +155,13 @@ export default function QuizBuilder() {
         </Title>
         <div className="flex flex-wrap gap-2">
           <Button
-            onClick={() => navigate("/admin/question-management")}
+            onClick={() => navigate("/settings/question-management")}
             className="rounded-md shadow-sm hover:shadow-md transition-all"
           >
             Question Management
           </Button>
           <Button
-            onClick={() => navigate("/admin/quiz-management")}
+            onClick={() => navigate("/settings/quiz-management")}
             className="rounded-md shadow-sm hover:shadow-md transition-all"
           >
             Back to Quiz List
@@ -163,7 +171,9 @@ export default function QuizBuilder() {
 
       {/* Quiz Form Section */}
       <div className="bg-white p-6 rounded-xl shadow-md">
-        <Title level={4} className="mb-4 text-gray-700">Quiz Information</Title>
+        <Title level={4} className="mb-4 text-gray-700">
+          Quiz Information
+        </Title>
         <QuizForm quiz={quizInfo} setQuiz={setQuizInfo} />
       </div>
 
@@ -171,7 +181,9 @@ export default function QuizBuilder() {
 
       {/* Question Form Section */}
       <div className="bg-white p-6 rounded-xl shadow-md">
-        <Title level={4} className="mb-4 text-gray-700">Add/Edit Question</Title>
+        <Title level={4} className="mb-4 text-gray-700">
+          Add/Edit Question
+        </Title>
         <QuestionForm
           quizId={quizInfo._id || ""}
           onAdd={addOrUpdateQuestion}
@@ -184,7 +196,9 @@ export default function QuizBuilder() {
 
       {/* Question List Section */}
       <div className="bg-white p-6 rounded-xl shadow-md">
-        <Title level={4} className="mb-4 text-gray-700">Quiz Questions</Title>
+        <Title level={4} className="mb-4 text-gray-700">
+          Quiz Questions
+        </Title>
         <QuestionList
           questions={quizInfo.questions || []}
           onEdit={(q) => setEditingQuestion(q)}
@@ -202,7 +216,13 @@ export default function QuizBuilder() {
           onClick={handleSaveQuiz}
           loading={isPending}
           // User check is removed from disabled condition for testing
-          disabled={!quizInfo.questions || quizInfo.questions.length === 0 || !quizInfo.title.trim() || quizInfo.quizTimeLimit === undefined || quizInfo.quizTimeLimit <= 0}
+          disabled={
+            !quizInfo.questions ||
+            quizInfo.questions.length === 0 ||
+            !quizInfo.title.trim() ||
+            quizInfo.quizTimeLimit === undefined ||
+            quizInfo.quizTimeLimit <= 0
+          }
           className="rounded-md shadow-lg hover:shadow-xl transition-all"
         >
           {isPending ? "Saving Quiz..." : "Save Quiz"}

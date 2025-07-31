@@ -17,7 +17,7 @@ import { MoreOutlined, PlusOutlined } from "@ant-design/icons";
 import useFetchData from "@/hooks/useFetchData";
 import QuestionForm from "./_components/question-form";
 import SearchQuestion from "./_components/search-question";
-import { useDeleteQuestion } from "./hooks/delete-confirm"; 
+import { useDeleteQuestion } from "./hooks/delete-confirm";
 import { useQuestionFilter } from "./hooks/useQuestionFilter";
 import type { Question, Quiz } from "@/types/types"; // Keep this import for Question type
 import type { TableProps } from "antd";
@@ -28,40 +28,53 @@ import type { Pagination } from "@/types/types";
 const { Title } = Typography;
 
 export default function QuestionManagement() {
-  const { /* getParamsString, */ deleteAllFilters, shouldResetFilters, setFilters, type } = useQuestionFilter();
+  const {
+    /* getParamsString, */ deleteAllFilters,
+    shouldResetFilters,
+    setFilters,
+    type,
+  } = useQuestionFilter();
   const [searchParams] = useSearchParams();
   const quizId = searchParams.get("quizId");
 
   // Use useMemo to memoize the endpoint URL
-const { filters } = useQuestionFilter(); // Thêm dòng này
+  const { filters } = useQuestionFilter(); // Thêm dòng này
 
-const endpoint = useMemo(() => {
-  const params = new URLSearchParams();
+  const endpoint = useMemo(() => {
+    const params = new URLSearchParams();
 
-  if (filters.page !== undefined) params.set("page", String(filters.page));
-  if (filters.pageSize !== undefined) params.set("pageSize", String(filters.pageSize));
-  if (filters.sortBy) params.set("sortBy", filters.sortBy);
-  if (filters.sortOrder) params.set("sortOrder", filters.sortOrder);
-  if (filters.search) params.set("search", filters.search);
-  if (filters.type) params.set("type", filters.type);
-  if (quizId) params.set("quizId", quizId);
+    if (filters.page !== undefined) params.set("page", String(filters.page));
+    if (filters.pageSize !== undefined)
+      params.set("pageSize", String(filters.pageSize));
+    if (filters.sortBy) params.set("sortBy", filters.sortBy);
+    if (filters.sortOrder) params.set("sortOrder", filters.sortOrder);
+    if (filters.search) params.set("search", filters.search);
+    if (filters.type) params.set("type", filters.type);
+    if (quizId) params.set("quizId", quizId);
 
-  return `/questions?${params.toString()}`;
-}, [filters, quizId]);
-
+    return `/questions?${params.toString()}`;
+  }, [filters, quizId]);
 
   // Fetch questions based on current filters and quizId
-  const { data, isLoading, error, refetch } = useFetchData<Pagination<Question>>(
+  const { data, isLoading, error, refetch } = useFetchData<
+    Pagination<Question>
+  >(
     endpoint, // Use the memoized endpoint
     { type: "private" }
   );
 
   // Fetch quizzes for the dropdown in QuestionForm and for displaying quiz title
-  const { data: quizData } = useFetchData<Pagination<Quiz>>("/quizzes?type=private");
-  const quizOptions = quizData?.content.map((q) => ({
-    _id: q._id,
-    title: q.title,
-  })) ?? [];
+  const { data: quizData } = useFetchData<Pagination<Quiz>>(
+    "/quizzes/my/list",
+    {
+      uniqueKey: ["/quizzes/my/list"],
+    }
+  );
+  const quizOptions =
+    quizData?.content.map((q) => ({
+      _id: q._id,
+      title: q.title,
+    })) ?? [];
 
   const navigate = useNavigate();
   const { mutate: deleteQuestionMutate } = useDeleteQuestion(); // Use the delete hook
@@ -96,7 +109,8 @@ const endpoint = useMemo(() => {
     {
       key: "stt",
       title: "STT",
-      render: (text, record, index) => (data?.currentPage ?? 0) * (data?.pageSize ?? 10) + index + 1, // Tính toán STT
+      render: (text, record, index) =>
+        (data?.currentPage ?? 0) * (data?.pageSize ?? 10) + index + 1, // Tính toán STT
     },
     {
       title: "Title", // Title column
@@ -139,14 +153,19 @@ const endpoint = useMemo(() => {
       render: (_, record) => {
         const items = [
           { key: "edit", label: "Edit" }, // Edit option
-          { key: "delete", label: <span className="text-red-500">Delete</span> }, // Delete option
+          {
+            key: "delete",
+            label: <span className="text-red-500">Delete</span>,
+          }, // Delete option
         ];
 
         const handleMenuClick = ({ key }: { key: string }) => {
           if (key === "edit") handleEdit(record);
           else if (key === "delete") {
             Modal.confirm({
-              title: `Are you sure you want to delete question "${record.content || "this question"}"?`, // Confirmation for deletion
+              title: `Are you sure you want to delete question "${
+                record.content || "this question"
+              }"?`, // Confirmation for deletion
               okText: "Yes",
               okType: "danger",
               cancelText: "No",
@@ -157,7 +176,9 @@ const endpoint = useMemo(() => {
                     refetch(); // Refetch after successful deletion
                   },
                   onError: (err: any) => {
-                    const errorMessage = err?.response?.data?.message || 'Failed to delete question.';
+                    const errorMessage =
+                      err?.response?.data?.message ||
+                      "Failed to delete question.";
                     message.error(errorMessage);
                     console.error("Delete failed:", err);
                   },
@@ -168,7 +189,10 @@ const endpoint = useMemo(() => {
         };
 
         return (
-          <Dropdown menu={{ items, onClick: handleMenuClick }} trigger={["click"]}>
+          <Dropdown
+            menu={{ items, onClick: handleMenuClick }}
+            trigger={["click"]}
+          >
             {/* The child of Dropdown must be a single React element */}
             <span>
               <Button shape="circle" icon={<MoreOutlined />} />
@@ -180,17 +204,30 @@ const endpoint = useMemo(() => {
   ];
 
   // Handle table change (pagination, sorting, filtering)
-  const onChange: TableProps<Question>["onChange"] = (pagination, filters, sorter) => {
+  const onChange: TableProps<Question>["onChange"] = (
+    pagination,
+    filters,
+    sorter
+  ) => {
     const sortInfo = Array.isArray(sorter) ? sorter[0] : sorter;
     const newPage = (pagination.current ?? 1) - 1;
     const newPageSize = pagination.pageSize;
 
     // Log the values being sent to setFilters
-    console.log('Changing page:', { requestedAntdPage: pagination.current, newBackendPage: newPage, newPageSize: newPageSize });
+    console.log("Changing page:", {
+      requestedAntdPage: pagination.current,
+      newBackendPage: newPage,
+      newPageSize: newPageSize,
+    });
 
     setFilters({
       sortBy: sortInfo?.field as string,
-      sortOrder: sortInfo?.order === 'ascend' ? 'asc' : (sortInfo?.order === 'descend' ? 'desc' : undefined), // Map Ant Design sort order to backend
+      sortOrder:
+        sortInfo?.order === "ascend"
+          ? "asc"
+          : sortInfo?.order === "descend"
+          ? "desc"
+          : undefined, // Map Ant Design sort order to backend
       page: newPage, // Pass the 0-indexed page
       pageSize: newPageSize,
     });
@@ -201,13 +238,19 @@ const endpoint = useMemo(() => {
       <div className="max-w-7xl mx-auto space-y-8">
         <Flex justify="space-between" align="center" wrap="wrap" gap="middle">
           <div>
-            <Title level={3} className="m-0">🎯 Question Management</Title>
+            <Title level={3} className="m-0">
+              🎯 Question Management
+            </Title>
             <p className="text-gray-600">
               Manage and reuse questions for multiple quizzes.
             </p>
             {quizId && (
               <span className="text-sm text-gray-500">
-                For quiz: <strong>{quizOptions.find(q => q._id === quizId)?.title || "Unknown Quiz"}</strong>
+                For quiz:{" "}
+                <strong>
+                  {quizOptions.find((q) => q._id === quizId)?.title ||
+                    "Unknown Quiz"}
+                </strong>
               </span>
             )}
           </div>
@@ -215,10 +258,13 @@ const endpoint = useMemo(() => {
             <Button onClick={() => navigate("/admin/quiz-management")}>
               Back to Quiz Management
             </Button>
-            <Button icon={<PlusOutlined />} onClick={() => {
-              setEditingQuestion(null); // Ensure no editing question is pre-filled
-              setIsModalOpen(true);
-            }}>
+            <Button
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setEditingQuestion(null); // Ensure no editing question is pre-filled
+                setIsModalOpen(true);
+              }}
+            >
               Add New Question
             </Button>
           </Space>
@@ -233,7 +279,9 @@ const endpoint = useMemo(() => {
             allowClear
             value={type || undefined} // Control value from searchParams
           >
-            <Select.Option value="multiple_choice">Multiple Choice</Select.Option>
+            <Select.Option value="multiple_choice">
+              Multiple Choice
+            </Select.Option>
             <Select.Option value="true_false">True/False</Select.Option>
             <Select.Option value="short_answer">Short Answer</Select.Option>
             <Select.Option value="ordering">Ordering</Select.Option>
@@ -265,7 +313,8 @@ const endpoint = useMemo(() => {
                 current: (data?.currentPage ?? 0) + 1, // Use data.currentPage from fetched data
                 pageSize: data?.pageSize ?? 10, // Use data.pageSize from fetched data
                 showSizeChanger: true, // Hiển thị tùy chọn thay đổi kích thước trang
-                showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`, // Hiển thị tổng số mục
+                showTotal: (total, range) =>
+                  `${range[0]}-${range[1]} of ${total} items`, // Hiển thị tổng số mục
               }}
               onChange={onChange}
             />
