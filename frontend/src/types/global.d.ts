@@ -4,6 +4,7 @@ declare type CurrentUserType = {
   _id: string;
   role: string;
   fullName: string;
+  email: string;
 };
 
 declare type User = {
