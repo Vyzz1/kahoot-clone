@@ -1,6 +1,6 @@
 // hooks/useSaveQuiz.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Quiz } from "@/types/types"; // Import Quiz type
+import type { Quiz } from "@/types/global"; // Import Quiz type
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 
 export function useSaveQuiz() {

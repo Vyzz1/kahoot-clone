@@ -13,6 +13,8 @@ import { adminOnlyRoutes, settingsRoutes } from "@/routes/admin.routes";
 import OwnerHostQuizzPage from "./pages/owner-host-quizz";
 import PlayerHostQuizzPage from "./pages/player-host-quizz";
 import JoinGamePage from "./pages/join-game";
+import PlayQuizPage from "./pages/quiz-player/PlayQuiz"; 
+
 
 function App() {
   const router = createBrowserRouter([
@@ -73,6 +75,11 @@ function App() {
               path: "join-game",
               element: <JoinGamePage />,
             },
+            {
+              path: "/player-host-quizz/quiz/play/:gameId",
+              element: <PlayQuizPage />,
+            },
+
           ],
         },
       ],

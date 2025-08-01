@@ -36,9 +36,10 @@ app.use("/api/auth", authRouter);
 app.use("/api/quizzes", quizRouter);
 app.use("/api/questions", questionRouter);
 app.use("/api/migrate", migrationRouter);
+
+app.use("/api/game", gameRouter)
 app.use("/api/game", gameRouter);
 app.use("/api/upload", uploadRoute);
-
 app.get("/api/queue/health", async (req, res) => {
   try {
     const health = await gameQueueService.getQueueHealth();

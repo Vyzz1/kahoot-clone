@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { useQuizFilter } from "../hooks/useQuizFilter";
 import QuizForm from "./quiz-form";
 import DeleteConfirm from "@/components/delete-confirm";
-import type { Quiz, Pagination, Question } from "@/types/types";
+import type { Quiz, Pagination, Question } from "@/types/global";
 import { useNavigate } from "react-router-dom";
 import { EyeOutlined } from "@ant-design/icons";
 import HostQuizzButton from "./host-quizz-btn";

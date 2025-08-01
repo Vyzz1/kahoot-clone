@@ -1,7 +1,7 @@
 import { Form, Input, Select, Button, Upload, message, Checkbox, Space } from "antd"; // Import Space
 import { UploadOutlined, PlusOutlined, MinusOutlined } from "@ant-design/icons";
 import { useState, useEffect } from "react";
-import type { Question, QuestionType } from "@/types/types"; // Removed NewQuestion import
+import type { Question, QuestionType } from "@/types/global"; // Removed NewQuestion import
 import { useSaveQuestion } from "../hooks/useSaveQuestion";
 
 const { TextArea } = Input;

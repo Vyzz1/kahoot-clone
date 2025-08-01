@@ -5,6 +5,7 @@ import User from "../models/user.model";
 import Answer from "../models/answer.model";
 import GameSession from "../models/gameSession.model";
 import { getRandomRoomPIN } from "../utils/random";
+import { io } from "../lib/socket";
 
 class GameService {
   async createGame(request: { quizzId: string; userId: string }) {
@@ -352,6 +353,15 @@ class GameService {
 
     return game.toObject();
   }
+
+  async getQuizIdByGameId(gameId: string) {
+    const game = await gameModel.findById(gameId).lean();
+    if (!game) {
+      throw new DocumentNotFoundError(`Game with ID ${gameId} does not exist.`);
+    }
+    return game.quiz.toString(); // Trả về quizId
+  }
+
 }
 
 export default new GameService();

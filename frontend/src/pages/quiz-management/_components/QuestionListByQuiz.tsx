@@ -53,11 +53,11 @@ const getColorByType = (type: string) => {
 };
 
 export default function QuestionListByQuiz() {
-  const { quizId } = useParams();
+  const { gameId } = useParams();
   const { page, pageSize, setFilters } = useQuizFilter();
 
   const questionQueryParams = {
-    quizId,
+    gameId,
     page,
     pageSize,
   };
@@ -80,7 +80,7 @@ export default function QuestionListByQuiz() {
   return (
     <section className="max-w-5xl mx-auto p-4 space-y-6 bg-gray-50 min-h-screen rounded-xl shadow-md">
       <Title level={3} className="text-gray-800 mb-6">
-        📝 Questions for Quiz: <span className="font-semibold text-blue-600">{quizId}</span>
+        📝 Questions for Quiz: <span className="font-semibold text-blue-600">{gameId}</span>
       </Title>
 
       {isLoading ? (

@@ -1,5 +1,5 @@
 import { Input, Switch, Form } from "antd";
-import type { Quiz } from "@/types/types";
+import type { Quiz } from "@/types/global";
 import { useEffect } from "react";
 
 interface Props {

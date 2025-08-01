@@ -1,6 +1,6 @@
 import { Form, Input, Select, Button } from "antd";
 import { useState, useEffect } from "react";
-import type { Question, QuestionType, Media } from "../../types/types";
+import type { Question, QuestionType, Media } from "../../types/global";
 import { v4 as uuidv4 } from "uuid";
 
 interface QuestionFormProps {
@@ -81,6 +81,9 @@ export default function QuestionForm({
       updatedAt: now,
       answers: [],
       points: Number(values.points),
+      title: values.content, // Assuming title is the same as content
+      options: [],
+      correctAnswer: String(values.correctIndexes || "") ,
     };
 
     const mediaObject: Media = {};
