@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Question } from "@/types/types";
+import type { Question } from "@/types/global";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 
 export function useSaveQuestion() {

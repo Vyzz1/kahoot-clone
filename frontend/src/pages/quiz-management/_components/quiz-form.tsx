@@ -3,7 +3,7 @@ import { Modal, Form, Input, Switch, Button, message } from "antd";
 import { useState, useEffect } from "react";
 import useSubmitData from "@/hooks/useSubmitData";
 import { useQueryClient } from "@tanstack/react-query";
-import type { Quiz } from "@/types/types";
+import type { Quiz } from "@/types/global";
 import { useNavigate } from "react-router-dom";
 
 interface QuizFormProps {

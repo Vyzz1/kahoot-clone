@@ -1,5 +1,5 @@
 import { List, Tag, Button, Tooltip } from "antd";
-import type { Question } from "@/types/types";
+import type { Question } from "@/types/global";
 import {
   EditOutlined,
   DeleteOutlined,

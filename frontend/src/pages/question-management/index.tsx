@@ -19,10 +19,10 @@ import QuestionForm from "./_components/question-form";
 import SearchQuestion from "./_components/search-question";
 import { useDeleteQuestion } from "./hooks/delete-confirm";
 import { useQuestionFilter } from "./hooks/useQuestionFilter";
-import type { Question, Quiz } from "@/types/types"; // Keep this import for Question type
+import type { Question, Quiz } from "@/types/global"; // Keep this import for Question type
 import type { TableProps } from "antd";
 import { useState } from "react";
-import type { Pagination } from "@/types/types";
+import type { Pagination } from "@/types/global";
 import { useAuth } from "@/hooks/useAuth";
 
 const { Title } = Typography;

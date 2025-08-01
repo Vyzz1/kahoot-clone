@@ -1,8 +1,8 @@
 import { Table, Tag, type TableProps } from "antd";
 import { useQuestionFilter } from "../hooks/useQuestionFilter";
 import QuestionForm from "./question-form";
-import DeleteConfirm from "@/components/delete-confirm"; // Đảm bảo import DeleteConfirm
-import type { Question, Pagination } from "@/types/types";
+import DeleteConfirm from "@/components/delete-confirm";
+import type { Question, Pagination } from "@/types/global";
 
 interface QuestionTableProps {
   questions: Pagination<Question>;
@@ -17,13 +17,12 @@ export default function QuestionTable({
   onAdd,
   quizOptions,
 }: QuestionTableProps) {
-  const { setFilters, page, pageSize, sortBy, sortOrder } = useQuestionFilter(); // Lấy page, pageSize, sortBy, sortOrder từ hook
+  const { setFilters, page, pageSize, sortBy, sortOrder } = useQuestionFilter();
 
   const columns: TableProps<Question>["columns"] = [
     {
       key: "stt",
       title: "STT",
-      // Sử dụng page và pageSize từ useQuestionFilter để tính toán STT chính xác
       render: (text, record, index) =>
         (page ?? 0) * (pageSize ?? 10) + index + 1,
     },
@@ -31,9 +30,12 @@ export default function QuestionTable({
       key: "content",
       title: "Question Content",
       dataIndex: "content",
-      sorter: true, // Bật chức năng sắp xếp
+      sorter: true,
       sortDirections: ["ascend", "descend"],
-      sortOrder: sortBy === "content" ? sortOrder : undefined, // Đặt trạng thái sắp xếp
+      sortOrder:
+        sortBy === "content"
+          ? (sortOrder === "asc" ? "ascend" : sortOrder === "desc" ? "descend" : undefined)
+          : undefined,
     },
     {
       key: "type",
@@ -55,9 +57,9 @@ export default function QuestionTable({
       dataIndex: "timeLimit",
     },
     {
-      key: "quizId", 
+      key: "quizId",
       title: "Quiz",
-      dataIndex: "quizId", 
+      dataIndex: "quizId",
       render: (quizId) => {
         const quiz = quizOptions.find((opt) => opt._id === quizId);
         return quiz ? quiz.title : "N/A";
@@ -75,7 +77,7 @@ export default function QuestionTable({
             quizOptions={quizOptions}
           />
           <DeleteConfirm
-            term={`question "${record.content}"`} // Dùng content thay vì title
+            term={`question "${record.content}"`}
             endpoint={`/questions/${record._id}`}
             queryKey={["/questions"]}
           />
@@ -92,12 +94,17 @@ export default function QuestionTable({
     const sortInfo = Array.isArray(sorter) ? sorter[0] : sorter;
 
     setFilters({
-      page: (pagination.current ?? 1) - 1, // Chuyển đổi về page bắt đầu từ 0
+      page: (pagination.current ?? 1) - 1,
       pageSize: pagination.pageSize,
-      sortBy: sortInfo?.field ? String(sortInfo.field) : undefined, // Chắc chắn là string hoặc undefined
-      sortOrder: sortInfo?.order as "asc" | "desc" | undefined,
-      type: filters.type ? (filters.type[0] as string) : undefined, // Lấy giá trị filter type đầu tiên
-      quizId: filters.quizId ? (filters.quizId[0] as string) : undefined, // Lấy quizId từ filter
+      sortBy: sortInfo?.field ? String(sortInfo.field) : undefined,
+      sortOrder:
+        sortInfo?.order === "ascend"
+          ? "asc"
+          : sortInfo?.order === "descend"
+          ? "desc"
+          : undefined,
+      type: filters.type ? (filters.type[0] as string) : undefined,
+      quizId: filters.quizId ? (filters.quizId[0] as string) : undefined,
     });
   };
 
@@ -109,12 +116,13 @@ export default function QuestionTable({
       loading={isLoading}
       pagination={{
         total: questions?.totalCount ?? 0,
-        current: (questions?.currentPage ?? 0) + 1, // Use questions.currentPage from props
-        pageSize: questions?.pageSize ?? 10, // Use questions.pageSize from props
-        showSizeChanger: true, // Hiển thị tùy chọn thay đổi kích thước trang
-        showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`, // Hiển thị tổng số mục
+        current: (questions?.currentPage ?? 0) + 1,
+        pageSize: questions?.pageSize ?? 10,
+        showSizeChanger: true,
+        showTotal: (total, range) =>
+          `${range[0]}-${range[1]} of ${total} items`,
       }}
-      onChange={onChange} 
+      onChange={onChange}
     />
   );
 }

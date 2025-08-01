@@ -12,11 +12,9 @@ gameRouter.post("/pin", validateJWT, gameController.getGameByPin);
 
 gameRouter.get("/:id/stats", validateJWT, gameController.getGameStats);
 
-gameRouter.get(
-  "/:id/leaderboard",
-  validateJWT,
-  gameController.getGameLeaderboard
-);
+gameRouter.get("/:id/quiz-id", validateJWT, gameController.getGameQuizId);
+
+gameRouter.get("/:id/leaderboard", validateJWT, gameController.getGameLeaderboard);
 
 gameRouter.post("/:id/join", validateJWT, gameController.joinGame);
 

@@ -145,6 +145,12 @@ class QuizService {
 
     return new PagedResult(quizzes, total, page, pageSize);
   }
+
+  async getQuestionsByQuizId(quizId: string) {
+  const questions = await Question.find({ quiz: quizId }).sort({ order: 1 });
+  return questions;
+}
+
 }
 
 export default new QuizService();

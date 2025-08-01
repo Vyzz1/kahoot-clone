@@ -5,7 +5,7 @@ import QuizTable from "./_components/quiz-table";
 import SearchQuiz from "./_components/search-quiz";
 import QuizForm from "./_components/quiz-form";
 import { useQuizFilter } from "./hooks/useQuizFilter";
-import type { Pagination, Quiz } from "@/types/types";
+import type { Pagination, Quiz } from "@/types/global";
 import { useAuth } from "@/hooks/useAuth";
 
 const { Title } = Typography;

@@ -9,7 +9,7 @@ import QuestionList from "./question-list";
 import { useSaveQuiz } from "@/pages/quiz-builder/hooks/useSaveQuiz";
 import { useAuth } from "../../hooks/useAuth";
 
-import type { Quiz, Question } from "@/types/types";
+import type { Quiz, Question } from "@/types/global";
 
 // Define AuthenticatedUser and AuthContextType here
 interface AuthenticatedUser {

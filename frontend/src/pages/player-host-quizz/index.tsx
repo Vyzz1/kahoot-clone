@@ -1,7 +1,7 @@
 import { useSocket } from "@/hooks/useSocket";
 import Title from "antd/es/typography/Title";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom"; // Import useNavigate
 import { message } from "antd";
 import InforJoinForm from "./_components/infor-join-form";
 
@@ -18,11 +18,14 @@ export default function PlayerHostQuizzPage() {
   const [playerData, setPlayerData] = useState<PlayerData | null>(null);
   const [gameState, setGameState] = useState<any>(null);
   const [params] = useSearchParams();
+  
   const gameId = params.get("gameId");
+  
 
   const shouldShowInforForm = !isJoined && isConnected;
 
   const socket = useSocket();
+  const navigate = useNavigate(); // Khởi tạo navigate
 
   useEffect(() => {
     if (!socket) return;
@@ -54,6 +57,9 @@ export default function PlayerHostQuizzPage() {
     const handleGameStarted = (data: any) => {
       console.log(" Game started:", data);
       message.info("Game has started!");
+      if (gameId) {
+        navigate(`quiz/play/${gameId}`);
+      }
     };
 
     socket.on("connect", handleConnect);
@@ -78,7 +84,7 @@ export default function PlayerHostQuizzPage() {
       socket.off("gameUpdate", handleGameUpdate);
       socket.off("gameStarted", handleGameStarted);
     };
-  }, [socket]);
+  }, [socket, gameId, navigate]); // Thêm navigate và gameId vào dependency array
 
   const handleJoinGame = (formData: {
     displayName: string;
@@ -135,9 +141,11 @@ export default function PlayerHostQuizzPage() {
                   <strong>Status:</strong> {gameState.status || "Unknown"}
                 </p>
                 <p>
-                  <strong>Current Question:</strong>{" "}
-                  {gameState.currentQuestionIndex + 1}
-                </p>
+                <strong>Current Question:</strong>{" "}
+                {typeof gameState.currentQuestionIndex === "number"
+                  ? gameState.currentQuestionIndex + 1
+                  : "N/A"}
+              </p>
               </div>
 
               {gameState.players && gameState.players.length > 0 && (

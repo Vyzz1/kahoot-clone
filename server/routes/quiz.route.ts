@@ -15,14 +15,10 @@ quizRouter.post(
 quizRouter.get("/", quizController.getFilteredQuizzes);
 quizRouter.get("/public/list", quizController.getFilteredQuizzes);
 quizRouter.get("/my/list", validateJWT, quizController.getMyQuizzes);
-
+quizRouter.get("/:id/questions", quizController.getQuestionsByQuizId);
 quizRouter.get("/:id", validateJWT, quizController.getQuizById);
-quizRouter.put(
-  "/:id",
-  validateJWT,
-  validateSchema(quizSchema),
-  quizController.updateQuiz
-);
+quizRouter.put("/:id", validateJWT, validateSchema(quizSchema), quizController.updateQuiz);
 quizRouter.delete("/:id", validateJWT, quizController.deleteQuiz);
+quizRouter.post("/:id/submit", validateJWT, quizController.submitQuizResult);
 
 export default quizRouter;
