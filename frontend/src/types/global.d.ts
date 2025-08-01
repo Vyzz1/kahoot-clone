@@ -5,6 +5,8 @@ declare type CurrentUserType = {
   name: string;
   id: number;
   role: string;
+
+  fullName: string;
   email: string;
 };
 

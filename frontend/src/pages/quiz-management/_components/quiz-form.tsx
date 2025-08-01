@@ -11,7 +11,7 @@ interface QuizFormProps {
   initialValues?: Quiz;
   onSubmit?: (values: QuizFormFields) => void;
   isDisabled?: boolean;
-  currentQueryKey: string; // ✅ Thêm prop này
+  currentQueryKey: string;
 }
 
 type QuizFormFields = {
@@ -49,23 +49,24 @@ export default function QuizForm({
     }
   }, [initialValues, form]);
 
+  console.log(currentQueryKey);
+
   const onSuccess = (data: unknown) => {
     const newQuiz = data as Quiz;
 
-    // ✅ Invalidate the quizzes query using the currentQueryKey
     queryClient.invalidateQueries({ queryKey: [currentQueryKey] });
 
     setOpen(false);
     form.resetFields();
     if (onSubmit) onSubmit(newQuiz);
-    setTimeout(() => {
-      message.success(
-        isEdit ? "Quiz updated successfully!" : "Quiz created successfully!"
-      );
-      if (!isEdit && newQuiz._id) {
-        navigate(`/settings/question-management?quizId=${newQuiz._id}`);
-      }
-    }, 300);
+    // setTimeout(() => {
+    //   message.success(
+    //     isEdit ? "Quiz updated successfully!" : "Quiz created successfully!"
+    //   );
+    //   if (!isEdit && newQuiz._id) {
+    //     navigate(`/settings/question-management?quizId=${newQuiz._id}`);
+    //   }
+    // }, 300);
   };
 
   const onError = (error: any) => {
@@ -148,6 +149,7 @@ export default function QuizForm({
 
           <Button
             type="primary"
+            size="middle"
             htmlType="submit"
             loading={isPending}
             className="w-full mt-4"

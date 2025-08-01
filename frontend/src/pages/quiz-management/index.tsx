@@ -38,7 +38,7 @@ export default function QuizManagement() {
   const endpoint = `/quizzes/my/list?${queryParams}`;
 
   const { data, isLoading, error } = useFetchData<Pagination<Quiz>>(endpoint, {
-    uniqueKey: [endpoint, getKey()], // dùng chính endpoint làm key
+    uniqueKey: [`/quizzes/my/list`, getKey()], // dùng chính endpoint làm key
     type: "private",
   });
 
@@ -47,7 +47,7 @@ export default function QuizManagement() {
   };
 
   return (
-    <section className="p-0 bg-gray-50 min-h-screen">
+    <section className="p-0  min-h-screen">
       <div className="max-w-screen-xl mx-auto space-y-8 p-4 md:p-6">
         {/* Header */}
         <Flex
@@ -55,7 +55,7 @@ export default function QuizManagement() {
           align="center"
           wrap="wrap"
           gap="middle"
-          className="bg-white p-6 rounded-xl shadow-md"
+          className=" p-6 rounded-xl "
         >
           <Title level={3} className="m-0 text-gray-800">
             📚 Quiz Management
@@ -73,12 +73,19 @@ export default function QuizManagement() {
             >
               Manage Questions
             </Button>
-            <QuizForm isEdit={false} currentQueryKey={endpoint} />
+            <QuizForm isEdit={false} currentQueryKey={`/quizzes/my/list`} />
           </Flex>
         </Flex>
 
         {/* Filters */}
-        <Flex wrap gap="middle" className="bg-white p-4 rounded-xl shadow-md">
+        <Flex
+          style={{
+            padding: "1rem",
+          }}
+          wrap
+          gap="middle"
+          className=" my-3 p-4 rounded-xl"
+        >
           <SearchQuiz />
           <Select
             placeholder="Filter by Visibility"
@@ -119,7 +126,7 @@ export default function QuizManagement() {
             <QuizTable
               quizzes={data}
               isLoading={isLoading}
-              currentQueryKey={endpoint}
+              currentQueryKey={`/quizzes/my/list`}
             />
           ) : (
             <Empty description="No quizzes found." className="py-12" />
