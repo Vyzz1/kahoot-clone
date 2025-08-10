@@ -271,7 +271,8 @@ export const handleForceEndGame = ({
   questionsMap,
 }: GameSocketHandlers) => {
   return async (data: any) => {
-    const { gameId, hostId } = data;
+    const hostId = socket.data.userId;
+    const { gameId } = data;
 
     try {
       const game = gameMap.get(gameId);
@@ -309,9 +310,6 @@ export const handleForceEndGame = ({
       }
     } catch (error) {
       console.error("Error force ending game:", error);
-      socket.emit("forceEndGameError", {
-        error: error instanceof Error ? error.message : "Failed to end game",
-      });
     }
   };
 };

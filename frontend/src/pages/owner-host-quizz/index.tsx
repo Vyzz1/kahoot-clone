@@ -95,6 +95,15 @@ function OwnerHostQuizzPage() {
       message.success("Game has finished!");
     };
 
+    const handleGameForceEnded = (data: any) => {
+      console.log("Game force ended:", data);
+      setGameState((prev: any) => ({
+        ...prev,
+        status: "finished",
+      }));
+      message.warning("Game has been forcefully ended!");
+    };
+
     const handlePlayerAnswered = (data: any) => {
       console.log("Player answered:", data);
     };
@@ -177,6 +186,8 @@ function OwnerHostQuizzPage() {
     socket.on("playerAnswered", handlePlayerAnswered);
     socket.on("nextQuestionStarted", handleNextQuestionStarted);
 
+    socket.on("gameForceEnded", handleGameForceEnded);
+
     if (!socket.connected) {
       console.log("Connecting to socket server...");
       socket.connect();
@@ -200,6 +211,7 @@ function OwnerHostQuizzPage() {
       socket.off("playerAnswered", handlePlayerAnswered);
       socket.off("nextQuestionStarted", handleNextQuestionStarted);
       socket.off("gameAlreadyInitialized", handleAlreadyInitialized);
+      socket.off("gameForceEnded", handleGameForceEnded);
     };
   }, [socket, params]);
 
@@ -404,7 +416,6 @@ function OwnerHostQuizzPage() {
             if (socket && params.get("gameId")) {
               socket.emit("forceEndGame", {
                 gameId: params.get("gameId"),
-                hostId: "current-host",
               });
             }
           }}

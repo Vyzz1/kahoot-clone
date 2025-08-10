@@ -5,7 +5,6 @@ import User from "../models/user.model";
 import Answer from "../models/answer.model";
 import GameSession from "../models/gameSession.model";
 import { getRandomRoomPIN } from "../utils/random";
-import { io } from "../lib/socket";
 
 class GamePersistService {
   async createGame(request: { quizzId: string; userId: string }) {
@@ -361,7 +360,6 @@ class GamePersistService {
     }
     return game.quiz.toString(); // Trả về quizId
   }
-
 }
 
 export default new GamePersistService();
