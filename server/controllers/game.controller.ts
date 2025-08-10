@@ -1,6 +1,8 @@
 import { Response } from "express";
-import gameService from "../services/game.service";
 import { TypedRequest } from "../types/express";
+import gamePersistService from "../services/gamePersist.service";
+import getGameService from "../services/getGame.service";
+import { PaginationGameRequest } from "../schemas/game.schema";
 
 class GameControler {
   async createGame(
@@ -11,18 +13,8 @@ class GameControler {
 
     const userId = req.user!.userId;
 
-    const result = await gameService.createGame({ quizzId, userId });
+    const result = await gamePersistService.createGame({ quizzId, userId });
     res.status(201).json(result);
-  }
-
-  async getGameById(
-    req: TypedRequest<{ TParams: { id: string } }>,
-    res: Response
-  ) {
-    const { id } = req.params;
-
-    const game = await gameService.getGameById(id);
-    res.status(200).json(game);
   }
 
   async getGameByPin(
@@ -31,43 +23,42 @@ class GameControler {
   ) {
     const { pin } = req.body;
 
-    const game = await gameService.getGameByPin(pin);
+    const game = await gamePersistService.getGameByPin(pin);
     res.status(200).json(game);
   }
 
-  async getGameStats(
-    req: TypedRequest<{ TParams: { id: string } }>,
+  async handleGetHostedGame(
+    req: TypedRequest<{ TQuery: PaginationGameRequest }>,
     res: Response
   ) {
-    const { id } = req.params;
-
-    const stats = await gameService.getGameStats(id);
-    res.status(200).json(stats);
-  }
-
-  async getGameLeaderboard(
-    req: TypedRequest<{ TParams: { id: string } }>,
-    res: Response
-  ) {
-    const { id } = req.params;
-
-    const leaderboard = await gameService.getGameLeaderboard(id);
-    res.status(200).json({ leaderboard });
-  }
-
-  async joinGame(
-    req: TypedRequest<{
-      TParams: { id: string };
-      TBody: { displayName: string };
-    }>,
-    res: Response
-  ) {
-    const { id } = req.params;
-    const { displayName } = req.body;
     const userId = req.user!.userId;
 
-    const session = await gameService.addPlayerToGame(id, userId, displayName);
-    res.status(200).json(session);
+    const games = await getGameService.getHostedGames(userId, req.query);
+    res.status(200).json(games);
+  }
+
+  async handleGetPlayedGame(
+    req: TypedRequest<{ TQuery: PaginationGameRequest }>,
+    res: Response
+  ) {
+    const userId = req.user!.userId;
+
+    const games = await getGameService.getPlayedGames(userId, req.query);
+    res.status(200).json(games);
+  }
+
+  async handleGetGameSessionAndAnswer(
+    req: TypedRequest<{ TParams: { id: string } }>,
+    res: Response
+  ) {
+    const userId = req.user!.userId;
+    const gameId = req.params.id;
+
+    const results = await getGameService.getGameSessionAndAnswer(
+      userId,
+      gameId
+    );
+    res.status(200).json(results);
   }
 }
 

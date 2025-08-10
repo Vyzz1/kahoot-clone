@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button, Progress, Typography, Input } from "antd";
 import { ClockCircleOutlined } from "@ant-design/icons";
-import type { Question } from "@/types/global";
 
 const { Title, Text } = Typography;
 

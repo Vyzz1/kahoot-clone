@@ -28,3 +28,31 @@ interface AnswerData {
   orderAnswer?: string[];
   pollAnswer?: string;
 }
+
+interface Player {
+  id: string;
+  displayName: string;
+  score: number;
+  avatar: string;
+  answers: Array<{
+    questionIndex: number;
+    answerId: string;
+    answerTime: number;
+    isCorrect: boolean;
+    pointsEarned: number;
+  }>;
+}
+
+interface GameMap {
+  players: Player[];
+  currentQuestionIndex: number;
+  currentQuestion: string;
+  questionEndTime?: Date;
+  isCurrentQuestionEnded: boolean;
+  startedAt: Date;
+  finishedAt?: Date;
+  status: "waiting" | "in_progress" | "finished" | "waiting_for_next_question";
+  hostId: string;
+  quizId: string;
+  totalQuestions?: number;
+}

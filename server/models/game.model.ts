@@ -18,13 +18,6 @@ const gameSchema = new Schema(
     startedAt: { type: Date },
 
     finishedAt: { type: Date },
-
-    settings: {
-      showLeaderboard: { type: Boolean, default: true },
-      showCorrectAnswer: { type: Boolean, default: true },
-      randomizeQuestions: { type: Boolean, default: false },
-      randomizeAnswers: { type: Boolean, default: false },
-    },
   },
   {
     timestamps: true,

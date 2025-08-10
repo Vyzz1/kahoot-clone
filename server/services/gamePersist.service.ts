@@ -6,7 +6,7 @@ import Answer from "../models/answer.model";
 import GameSession from "../models/gameSession.model";
 import { getRandomRoomPIN } from "../utils/random";
 
-class GameService {
+class GamePersistService {
   async createGame(request: { quizzId: string; userId: string }) {
     const { quizzId, userId } = request;
     const roomPIN = getRandomRoomPIN();
@@ -354,4 +354,4 @@ class GameService {
   }
 }
 
-export default new GameService();
+export default new GamePersistService();

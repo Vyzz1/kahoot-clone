@@ -13,7 +13,7 @@ import {
 import { useState } from "react";
 
 function Header() {
-  const { currentUser, auth } = useAuth();
+  const { currentUser } = useAuth();
   const logout = useLogout();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -27,7 +27,7 @@ function Header() {
     }
   };
 
-  const isLoggedIn = !!currentUser && !!auth;
+  const isLoggedIn = !!currentUser;
 
   const userMenu = (
     <Menu>

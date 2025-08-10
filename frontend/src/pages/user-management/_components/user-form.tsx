@@ -3,7 +3,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Button, Form, Input, message, Modal } from "antd";
 import { useForm } from "antd/es/form/Form";
 import { useState } from "react";
-import type { User } from "@/types/global";
 
 type UserFormFields = Omit<
   User,

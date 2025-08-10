@@ -49,8 +49,6 @@ export default function InforJoinForm({
       return;
     }
 
-    console.log("Current user:", currentUser);
-
     onSubmit({
       id: currentUser?._id as string,
       displayName: values.displayName,

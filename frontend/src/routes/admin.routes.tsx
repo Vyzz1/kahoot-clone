@@ -5,8 +5,9 @@ import QuizManagement from "@/pages/quiz-management";
 import QuestionManagement from "@/pages/question-management";
 import QuizBuilder from "@/pages/quiz-builder";
 import MigrationPage from "@/pages/MigrationPage/MigrationPage";
+import GameHostedPage from "@/pages/game-hosted";
+import GamePlayedPage from "@/pages/game-played";
 
-// Admin-only routes (user-management and migration)
 export const adminOnlyRoutes: RouteObject[] = [
   {
     path: "user-management",
@@ -18,7 +19,6 @@ export const adminOnlyRoutes: RouteObject[] = [
   },
 ];
 
-// Settings routes (accessible by both admin and user)
 export const settingsRoutes: RouteObject[] = [
   {
     path: "quiz-management",
@@ -32,9 +32,16 @@ export const settingsRoutes: RouteObject[] = [
     path: "quiz-builder",
     element: <QuizBuilder />,
   },
+  {
+    path: "game-hosted",
+    element: <GameHostedPage />,
+  },
+  {
+    path: "game-played",
+    element: <GamePlayedPage />,
+  },
 ];
 
-// Legacy admin routes for backward compatibility
 export const adminRoutes: RouteObject[] = [
   ...adminOnlyRoutes,
   ...settingsRoutes,

@@ -37,6 +37,19 @@ const allAdminNavItems = [
     roles: ["admin", "user"],
   },
   {
+    key: "/game-hosted",
+    label: <Link to="/settings/game-hosted">Game Hosted</Link>,
+    icon: <UserOutlined />,
+    roles: ["admin", "user"],
+  },
+  {
+    key: "/game-played",
+    label: <Link to="/settings/game-played">Game Played</Link>,
+    icon: <UserOutlined />,
+    roles: ["admin", "user"],
+  },
+
+  {
     key: "/admin/migrate",
     label: <Link to="/admin/migrate">API Migration</Link>,
     icon: <DatabaseOutlined />,

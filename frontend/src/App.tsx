@@ -13,6 +13,7 @@ import { adminOnlyRoutes, settingsRoutes } from "@/routes/admin.routes";
 import OwnerHostQuizzPage from "./pages/owner-host-quizz";
 import PlayerHostQuizzPage from "./pages/player-host-quizz";
 import JoinGamePage from "./pages/join-game";
+import GameResult from "./pages/game-result";
 
 function App() {
   const router = createBrowserRouter([
@@ -52,7 +53,6 @@ function App() {
               element: <Navigate to="/settings/quiz-management" replace />,
             },
             {
-              path: "",
               element: <AdminLayout />,
               children: settingsRoutes,
             },
@@ -72,6 +72,10 @@ function App() {
             {
               path: "join-game",
               element: <JoinGamePage />,
+            },
+            {
+              path: "game-played/:id/results",
+              element: <GameResult />,
             },
           ],
         },

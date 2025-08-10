@@ -1,5 +1,5 @@
 import { Worker } from "bullmq";
-import gameService from "../services/game.service";
+import gamePersistService from "../services/gamePersist.service";
 import loadEnv from "../config/env";
 
 loadEnv();
@@ -27,7 +27,7 @@ const gameWorker = new Worker(
           const { gameId, playerId, displayName } = job.data;
           console.log("Play id", playerId);
           console.log(`Join game: ${displayName} -> ${gameId}`);
-          const result = await gameService.addPlayerToGame(
+          const result = await gamePersistService.addPlayerToGame(
             gameId,
             playerId,
             displayName
@@ -39,7 +39,7 @@ const gameWorker = new Worker(
         case "startGame": {
           const { gameId, hostId } = job.data;
           console.log(`Start game: ${gameId}`);
-          const result = await gameService.startGame(gameId, hostId);
+          const result = await gamePersistService.startGame(gameId, hostId);
           console.log(`Start game successful: ${gameId}`);
           return result;
         }
@@ -47,7 +47,7 @@ const gameWorker = new Worker(
         case "saveAnswer": {
           const answerData = job.data;
           console.log(`Save answer: ${answerData.playerId}`);
-          const result = await gameService.savePlayerAnswer(answerData);
+          const result = await gamePersistService.savePlayerAnswer(answerData);
           console.log(` Save answer successful: ${answerData.playerId}`);
           return result;
         }
@@ -55,7 +55,7 @@ const gameWorker = new Worker(
         case "endGame": {
           const { gameId, hostId } = job.data;
           console.log(`End game: ${gameId}`);
-          const result = await gameService.endGame(gameId, hostId);
+          const result = await gamePersistService.endGame(gameId, hostId);
           console.log(`End game successful: ${gameId}`);
           return result;
         }
@@ -63,7 +63,7 @@ const gameWorker = new Worker(
         case "removePlayer": {
           const { gameId, playerId } = job.data;
           console.log(`Remove player: ${playerId} from ${gameId}`);
-          const result = await gameService.removePlayerFromGame(
+          const result = await gamePersistService.removePlayerFromGame(
             gameId,
             playerId
           );
