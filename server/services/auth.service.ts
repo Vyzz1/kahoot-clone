@@ -85,6 +85,12 @@ class AuthService {
       throw new DuplicateDocumentError("User not found with this email");
     }
 
+    if (user.provider !== "local") {
+      throw new BadRequestError(
+        `Your Account is linked with ${user.provider}. Please login using ${user.provider}.`
+      );
+    }
+
     if (user.isBanned) {
       throw new ForbiddenError("User is banned");
     }
@@ -217,6 +223,26 @@ class AuthService {
     });
 
     await redis.del(`refreshToken:${user.jti}`);
+  }
+
+  async oAuthLogin(user: any): Promise<CommonLoginResponse> {
+    // Update last login
+    user.lastLogin = new Date();
+    await user.save();
+
+    const { accessToken, refreshToken } = this.generateToken(user);
+
+    return {
+      accessToken,
+      refreshToken,
+      user: {
+        _id: user._id.toString(),
+        email: user.email,
+        role: user.role,
+        fullName: user.fullName,
+        avatar: user.avatar || null,
+      },
+    };
   }
 }
 

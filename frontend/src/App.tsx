@@ -14,6 +14,7 @@ import OwnerHostQuizzPage from "./pages/owner-host-quizz";
 import PlayerHostQuizzPage from "./pages/player-host-quizz";
 import JoinGamePage from "./pages/join-game";
 import GameResult from "./pages/game-result";
+import OAuthCallBack from "./pages/oauth-callback";
 
 function App() {
   const router = createBrowserRouter([
@@ -78,6 +79,10 @@ function App() {
               element: <GameResult />,
             },
           ],
+        },
+        {
+          path: "oauth/google/callback",
+          element: <OAuthCallBack />,
         },
       ],
     },

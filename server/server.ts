@@ -22,6 +22,7 @@ import "./processors/gamePersistenceProcessor";
 import { server, app } from "./lib/socket";
 import gameRouter from "./routes/game.route";
 import uploadRoute from "./routes/upload.route";
+import oAuthRouter from "./routes/oauth.route";
 app.use(corsHandler);
 app.use(compression({ threshold: 1024 }));
 
@@ -36,7 +37,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/quizzes", quizRouter);
 app.use("/api/questions", questionRouter);
 app.use("/api/migrate", migrationRouter);
-
+app.use("/api/oauth", oAuthRouter);
 app.use("/api/game", gameRouter);
 app.use("/api/upload", uploadRoute);
 app.get("/api/queue/health", async (req, res) => {
