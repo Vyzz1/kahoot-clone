@@ -26,7 +26,11 @@ export class DocumentNotFoundError extends CustomError {
     super(message, StatusCodes.NOT_FOUND, "DocumentNotFoundError");
   }
 }
-
+export class BadRequestError extends CustomError {
+  constructor(message: string = "Bad request") {
+    super(message, StatusCodes.BAD_REQUEST, "BadRequestError");
+  }
+}
 export class DuplicateDocumentError extends CustomError {
   constructor(message: string = "Duplicate document found") {
     super(message, StatusCodes.CONFLICT, "DuplicateDocumentError");

@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { RegisterRequest } from "../schemas/auth.schema";
+import { ChangePasswordRequest, RegisterRequest } from "../schemas/auth.schema";
 import authService from "../services/auth.service";
 import { TypedRequest } from "../types/express";
 import { StatusCodes } from "http-status-codes";
@@ -53,6 +53,33 @@ class AuthController {
     res.status(OK).send({
       accessToken,
     });
+  }
+  async logout(req: TypedRequest, res: Response) {
+    await authService.logout(req.user);
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
+    });
+
+    res.status(OK).send({
+      message: "Logged out successfully",
+    });
+  }
+
+  async changePassword(
+    req: TypedRequest<{ TBody: ChangePasswordRequest }>,
+    res: Response
+  ) {
+    const response = await authService.changePassword(
+      req.body,
+      req.user,
+      req.cookies.refreshToken
+    );
+
+    res.status(OK).send(response);
   }
 }
 
