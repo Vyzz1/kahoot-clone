@@ -5,9 +5,11 @@ import {
   PlusCircleOutlined,
   DatabaseOutlined,
   UserOutlined,
+  LockFilled,
 } from "@ant-design/icons";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { ro } from "date-fns/locale";
 
 const { Content, Sider } = Layout;
 
@@ -54,6 +56,12 @@ const allAdminNavItems = [
     label: <Link to="/admin/migrate">API Migration</Link>,
     icon: <DatabaseOutlined />,
     roles: ["admin"],
+  },
+  {
+    key: "/settings/change-password",
+    label: <Link to="/settings/change-password">Change Password</Link>,
+    icon: <LockFilled />,
+    roles: ["admin", "user"],
   },
 ];
 

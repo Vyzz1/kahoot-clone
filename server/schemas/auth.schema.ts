@@ -22,3 +22,20 @@ export const registerSchema = z
   });
 
 export type RegisterRequest = z.infer<typeof registerSchema>;
+
+export const changePasswordSchema = z
+  .object({
+    oldPassword: z.string().min(6, "Password must be at least 6 characters"),
+    newPassword: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z
+      .string()
+      .min(6, "Password must be at least 6 characters"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+  })
+  .refine((data) => data.newPassword !== data.oldPassword, {
+    message: "New password should be different from current password",
+  });
+
+export type ChangePasswordRequest = z.infer<typeof changePasswordSchema>;
