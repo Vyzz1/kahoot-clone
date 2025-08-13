@@ -1,4 +1,3 @@
-// src/routes/admin.routes.tsx
 import type { RouteObject } from "react-router-dom";
 import UserManagement from "@/pages/user-management";
 import QuizManagement from "@/pages/quiz-management";

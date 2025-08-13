@@ -3,8 +3,6 @@ import { Modal, Form, Input, Switch, Button, message } from "antd";
 import { useState, useEffect } from "react";
 import useSubmitData from "@/hooks/useSubmitData";
 import { useQueryClient } from "@tanstack/react-query";
-import type { Quiz } from "@/types/global";
-import { useNavigate } from "react-router-dom";
 
 interface QuizFormProps {
   isEdit: boolean;
@@ -30,7 +28,6 @@ export default function QuizForm({
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const [form] = useForm<QuizFormFields>();
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (initialValues) {

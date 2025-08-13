@@ -1,4 +1,3 @@
-// src/services/migration.service.ts
 import User from "../models/user.model";
 import Quiz from "../models/quiz.model";
 import Question from "../models/question.model";
@@ -6,22 +5,18 @@ import MigrationVersion from "../models/migrationVersion.model";
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
 
-// Định nghĩa interface cho một Migration
 interface Migration {
   version: number;
   name: string;
   up: () => Promise<void>;
 }
 
-// ✅ Định nghĩa interface cho Migration với Status
 interface MigrationWithStatus {
   version: number;
   name: string;
-  status: 'Applied' | 'Pending'; // Ràng buộc kiểu dữ liệu cho status
+  status: 'Applied' | 'Pending'; 
 }
 
-// Mảng chứa tất cả các migration của ứng dụng
-// Các migration phải được sắp xếp theo thứ tự phiên bản tăng dần
 const allMigrations: Migration[] = [
   {
     version: 1,
@@ -35,7 +30,6 @@ const allMigrations: Migration[] = [
       console.log("Migration v1 completed: 'points' field added.");
     },
   },
-  // Thêm các migration mới tại đây theo thứ tự phiên bản tăng dần
   {
     version: 2,
     name: "Migration v2: Add 'category' field to Quiz model",
@@ -170,13 +164,12 @@ class MigrationService {
 
   /**
    * Lấy trạng thái migration hiện tại của database và danh sách các migration đã định nghĩa.
-   * @returns {Promise<{ currentVersion: number, migrations: MigrationWithStatus[] }>} // ✅ Cập nhật kiểu trả về
+   * @returns {Promise<{ currentVersion: number, migrations: MigrationWithStatus[] }>} 
    */
   async getMigrationStatus(): Promise<{ currentVersion: number, migrations: MigrationWithStatus[] }> {
     const dbVersionDoc = await MigrationVersion.findOne();
     const currentDbVersion = dbVersionDoc ? dbVersionDoc.version : 0;
 
-    // ✅ Ép kiểu rõ ràng cho status
     const migrationsWithStatus: MigrationWithStatus[] = allMigrations.map(m => ({
       version: m.version,
       name: m.name,
@@ -221,15 +214,14 @@ class MigrationService {
     for (const migration of pendingMigrations) {
       try {
         console.log(`Executing migration v${migration.version}: ${migration.name}`);
-        await migration.up(); // Chạy logic của migration
+        await migration.up(); 
 
-        // Cập nhật phiên bản database sau khi migration thành công
         dbVersionDoc = await MigrationVersion.findOneAndUpdate(
           {},
           { version: migration.version, lastRun: new Date() },
           { upsert: true, new: true }
         );
-        newVersion = migration.version; // Cập nhật phiên bản mới nhất đã chạy
+        newVersion = migration.version;
         migrationsRun.push({ version: migration.version, name: migration.name });
         console.log(`Successfully completed migration v${migration.version}. Database version updated to ${dbVersionDoc?.version}.`);
       } catch (error) {

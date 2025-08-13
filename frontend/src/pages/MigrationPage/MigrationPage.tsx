@@ -1,13 +1,11 @@
-// src/pages/migration/index.tsx
 import { Button, Card, Flex, message, Typography, Spin, Table, Tag } from "antd";
-import { BackwardFilled, DatabaseOutlined, ReloadOutlined, SyncOutlined } from "@ant-design/icons"; // Import SyncOutlined
+import { BackwardFilled, DatabaseOutlined, ReloadOutlined, SyncOutlined } from "@ant-design/icons"; 
 import useSubmitData from "@/hooks/useSubmitData";
-import useFetchData from "@/hooks/useFetchData"; // Import useFetchData
+import useFetchData from "@/hooks/useFetchData"; 
 import { useNavigate } from "react-router-dom";
 
 const { Title, Paragraph } = Typography;
 
-// Định nghĩa kiểu cho dữ liệu trạng thái migration từ backend
 interface MigrationStatusResponse {
   currentVersion: number;
   migrations: {
@@ -19,37 +17,34 @@ interface MigrationStatusResponse {
 
 export default function MigrationPage() {
   const navigate = useNavigate();
-  // Hook để lấy trạng thái migration
   const { data: migrationStatus, isLoading: isLoadingStatus, refetch: refetchMigrationStatus } = useFetchData<MigrationStatusResponse>(
     "/migrate/status",
     {
-      type: "private", // Đây là endpoint được bảo vệ
-      uniqueKey: ["migration-status"], // Key duy nhất cho query này
+      type: "private", 
+      uniqueKey: ["migration-status"], 
     }
   );
 
-  // Hook để gửi yêu cầu API cho seed data
   const { mutate: seedMutate, isPending: isSeeding } = useSubmitData(
     "/migrate/seed-data",
     () => {
       message.success("Sample data seeded successfully!");
-      refetchMigrationStatus(); // Refresh trạng thái sau khi seed
+      refetchMigrationStatus(); 
     },
     (error: any) => {
       message.error(error.response?.data?.message || "Failed to seed data.");
     }
   );
 
-  // Hook để gửi yêu cầu API cho run migrations
   const { mutate: migrateMutate, isPending: isMigrating } = useSubmitData(
     "/migrate/run-migrations",
-    (response: any) => { // ✅ Nhận phản hồi chi tiết
+    (response: any) => { 
       const { message: msg, migrationsRun, newVersion } = response;
       message.success(`${msg} New DB version: ${newVersion}`);
       if (migrationsRun && migrationsRun.length > 0) {
         message.info(`Migrations applied: ${migrationsRun.map((m: any) => m.name).join(", ")}`);
       }
-      refetchMigrationStatus(); // Refresh trạng thái sau khi migrate
+      refetchMigrationStatus(); 
     },
     (error: any) => {
       message.error(error.response?.data?.message || "Failed to run migrations.");
@@ -131,7 +126,7 @@ export default function MigrationPage() {
                 columns={migrationTableColumns}
                 dataSource={migrationStatus?.migrations || []}
                 rowKey="version"
-                pagination={false} // Không cần phân trang cho danh sách migration
+                pagination={false} 
                 size="small"
                 className="rounded-md overflow-hidden"
               />

@@ -12,8 +12,8 @@ class QuestionController {
         search?: string;
         type?: string;
         quizId?: string;
-        sortBy?: string; // Thêm sortBy
-        sortOrder?: string; // Thêm sortOrder
+        sortBy?: string; 
+        sortOrder?: string; 
       };
     }>,
     res: Response
@@ -23,8 +23,8 @@ class QuestionController {
       pageSize = "10",
       search = "",
       type,
-      sortBy, // Lấy sortBy từ query
-      sortOrder, // Lấy sortOrder từ query
+      sortBy, 
+      sortOrder, 
     } = req.query;
 
     const result = await questionService.getAllQuestions(
@@ -34,8 +34,8 @@ class QuestionController {
         search,
         type,
         quizId: req.query.quizId,
-        sortBy, // Truyền sortBy vào service
-        sortOrder, // Truyền sortOrder vào service
+        sortBy, 
+        sortOrder, 
       },
       req.user!.email
     );
@@ -58,7 +58,6 @@ class QuestionController {
     req: TypedRequest<{ TParams: { id: string }; TBody: QuestionRequest }>,
     res: Response
   ) {
-    // Truyền req.user!.userId vào phương thức updateQuestion
     const question = await questionService.updateQuestion(
       req.params.id,
       req.body,
@@ -71,7 +70,6 @@ class QuestionController {
     req: TypedRequest<{ TParams: { id: string } }>,
     res: Response
   ) {
-    // Truyền req.user!.userId vào phương thức deleteQuestion
     await questionService.deleteQuestion(req.params.id, req.user!.userId);
     res.status(204).send();
   }

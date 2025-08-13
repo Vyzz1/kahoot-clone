@@ -36,24 +36,6 @@ export const paginationUserSchema = z.object({
   ),
 });
 
-// export const paginationUserSchema = z.object({
-//   pageSize: z
-//     .string()
-//     .regex(/^\d+$/, "Page size must be a number")
-//     .transform(Number)
-//     .optional(),
-//   currentPage: z
-//     .string()
-//     .regex(/^\d+$/, "Current page must be a number")
-//     .transform(Number)
-//     .optional(),
-//   sortBy: z.string().optional(),
-//   sortOrder: z.enum(["ascend", "descend"]).optional(),
-//   search: z.string().optional(),
-//   providers: z.union([z.string(), z.array(z.string())]).optional(),
-//   statuses: z.union([z.string(), z.array(z.string())]).optional(),
-// });
-
 export type PaginationUserRequest = z.infer<typeof paginationUserSchema>;
 
 export const banUserSchema = z.object({

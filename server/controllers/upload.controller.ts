@@ -4,7 +4,7 @@ import { StatusCodes } from "http-status-codes";
 const { CREATED } = StatusCodes;
 
 class UploadController {
-  async uploadSinlgeFile(req: Request, res: Response) {
+  async uploadSingleFile(req: Request, res: Response) {
     if (!req.file) {
       res.status(400).send({ message: "No file uploaded" });
     }

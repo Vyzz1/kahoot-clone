@@ -2,7 +2,7 @@ import { Input } from "antd";
 import { useDebounce } from "use-debounce";
 import { useEffect, useState } from "react";
 import { useQuizFilter } from "../hooks/useQuizFilter";
-import { SearchOutlined } from "@ant-design/icons"; // Import search icon
+import { SearchOutlined } from "@ant-design/icons"; 
 
 function SearchQuiz() {
   const { search, setFilters } = useQuizFilter();

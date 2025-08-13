@@ -8,7 +8,7 @@
       console.log("Allowed roles:", allowedRoles);
       if (!userRole || !allowedRoles.includes(userRole)) {
         res.status(401).json({ message: "Unauthorized" });
-        return; // Thêm return để ngăn chặn việc tiếp tục xử lý
+        return; 
       }
       next();
     };

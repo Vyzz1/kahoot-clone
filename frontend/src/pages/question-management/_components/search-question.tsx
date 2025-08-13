@@ -4,8 +4,8 @@ import { useDebounce } from "use-debounce";
 import { useQuestionFilter } from "../hooks/useQuestionFilter";
 
 export default function SearchQuestion() {
-  const { setFilters, search } = useQuestionFilter(); // Lấy giá trị search hiện tại từ hook
-  const [searchText, setSearchText] = useState(search || ""); // Khởi tạo với giá trị search từ URL
+  const { setFilters, search } = useQuestionFilter(); 
+  const [searchText, setSearchText] = useState(search || ""); 
   const [debounced] = useDebounce(searchText, 300);
 
 useEffect(() => {
@@ -22,7 +22,7 @@ useEffect(() => {
       value={searchText}
       onChange={(e) => setSearchText(e.target.value)}
       allowClear
-      className="rounded-md shadow-sm" // Thêm style
+      className="rounded-md shadow-sm" 
     />
   );
 }

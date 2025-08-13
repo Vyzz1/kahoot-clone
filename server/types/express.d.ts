@@ -27,23 +27,6 @@ export type TypedRequest<T extends RequestTypes = {}> = Request<
   ExtractQuery<T>
 >;
 
-// export type TypedRequest<T extends {
-//   TParams?: ParamsDictionary;
-//   TBody?: any;
-//   TQuery?: ParsedQs;
-// } = {}> = Request<
-//   T["TParams"] extends undefined ? ParamsDictionary : T["TParams"],
-//   any,
-//   T["TBody"] extends undefined ? any : T["TBody"],
-//   T["TQuery"] extends undefined ? ParsedQs : T["TQuery"]
-// >;
-
-// export interface AuthenticatedUser {
-//   id: string;
-//   role: string;
-//   email?: string;
-//   username?: string;
-// }
 
 declare interface AuthenticatedRequest extends Request {
   user?: AuthenticatedUser;

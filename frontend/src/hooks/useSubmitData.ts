@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Axios, type AxiosResponse } from "axios";
-import useAxiosPrivate from "./useAxiosPrivate"; // Assuming this hook exists and provides an Axios instance
+import useAxiosPrivate from "./useAxiosPrivate"; 
 
 type AxiosType = "post" | "patch" | "put" | "delete";
 
 // Define the variables that will be passed to the mutate function
 interface SubmitDataVariables {
-  data?: Record<string | number, unknown>; // Optional data for POST/PUT/PATCH
+  data?: Record<string | number, unknown> | FormData; // Optional data for POST/PUT/PATCH
   type: AxiosType;
   endpoint?: string; // Make endpoint optional here, so it can be overridden
 }
@@ -14,7 +14,7 @@ interface SubmitDataVariables {
 const fetchData = async (
   axiosInstance: Axios, // Renamed from axiosPrivate for clarity
   url: string, // This will be the resolved endpoint
-  body: Record<string | number, unknown> | undefined, // Body can be undefined for DELETE
+  body: Record<string | number, unknown> | FormData | undefined, // Body can be undefined for DELETE
   type: AxiosType
 ): Promise<unknown> => {
   const methods = {

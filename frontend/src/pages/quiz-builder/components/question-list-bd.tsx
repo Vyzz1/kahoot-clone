@@ -1,10 +1,9 @@
 import { List, Tag, Button, Tooltip } from "antd";
-import type { Question } from "@/types/global";
 import {
   EditOutlined,
   DeleteOutlined,
   ClockCircleOutlined,
-  DragOutlined, // Import for drag icon
+  DragOutlined, 
 } from "@ant-design/icons";
 import React, { useState } from 'react';
 
@@ -12,7 +11,7 @@ interface Props {
   questions: Question[];
   onEdit: (q: Question) => void;
   onDelete: (id: string) => void;
-  onReorder: (newOrder: Question[]) => void; // New prop for reordering
+  onReorder: (newOrder: Question[]) => void; 
 }
 
 const getColorByType = (type: string) => {
@@ -38,12 +37,12 @@ export default function QuestionList({ questions, onEdit, onDelete, onReorder }:
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, question: Question) => {
     setDraggedItem(question);
     e.dataTransfer.effectAllowed = "move";
-    // Set a dummy data to make dragging work in some browsers
+
     e.dataTransfer.setData("text/plain", question._id);
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault(); // Necessary to allow dropping
+    e.preventDefault(); 
     e.dataTransfer.dropEffect = "move";
   };
 
@@ -61,9 +60,7 @@ export default function QuestionList({ questions, onEdit, onDelete, onReorder }:
       return;
     }
 
-    // Remove the dragged item from its original position
     const [removed] = newQuestions.splice(draggedIndex, 1);
-    // Insert it at the new position
     newQuestions.splice(targetIndex, 0, removed);
 
     onReorder(newQuestions);
@@ -81,7 +78,7 @@ export default function QuestionList({ questions, onEdit, onDelete, onReorder }:
       locale={{ emptyText: "No questions added yet." }}
       renderItem={(q, index) => (
         <List.Item
-          key={q._id} // Ensure key is unique and stable
+          key={q._id}
           draggable="true"
           onDragStart={(e) => handleDragStart(e, q)}
           onDragOver={handleDragOver}
@@ -105,7 +102,7 @@ export default function QuestionList({ questions, onEdit, onDelete, onReorder }:
                 icon={<DeleteOutlined />}
                 size="small"
                 danger
-                onClick={() => onDelete(q._id!)} // Use q._id! as it always exists when displayed in the list
+                onClick={() => onDelete(q._id!)}
                 className="rounded-md"
               />
             </Tooltip>,
@@ -129,7 +126,7 @@ export default function QuestionList({ questions, onEdit, onDelete, onReorder }:
               <div className="text-xs text-gray-500 flex items-center gap-1">
                 <ClockCircleOutlined />
                 {q.timeLimit}s
-                {q.points !== undefined && ( // Display points if available
+                {q.points !== undefined && ( 
                   <span className="ml-2 px-2 py-0.5 bg-purple-100 text-purple-800 rounded-full text-xs font-semibold">
                     {q.points} pts
                   </span>
@@ -151,9 +148,9 @@ export default function QuestionList({ questions, onEdit, onDelete, onReorder }:
               </div>
             )}
 
-            {q.answers && q.answers.length > 0 && (
+            {q.options && q.options.length > 0 && (
               <ul className="list-disc ml-6 mt-2 text-sm text-gray-700">
-                {q.answers.map((a, i) => (
+                {q.options.map((a, i) => (
                   <li
                     key={i}
                     className={a.isCorrect ? "font-bold text-green-600" : ""}

@@ -17,7 +17,6 @@ import gameQueueService from "./services/gameQueue.service";
 
 loadEnv();
 
-import "./processors/gamePersistenceProcessor";
 
 import { server, app } from "./lib/socket";
 import gameRouter from "./routes/game.route";
@@ -31,6 +30,8 @@ app.use(helmet());
 
 app.use(express.json());
 
+app.use("/uploads", express.static("uploads"));
+
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/quizzes", quizRouter);
@@ -38,7 +39,6 @@ app.use("/api/questions", questionRouter);
 app.use("/api/migrate", migrationRouter);
 
 app.use("/api/game", gameRouter)
-app.use("/api/game", gameRouter);
 app.use("/api/upload", uploadRoute);
 app.get("/api/queue/health", async (req, res) => {
   try {

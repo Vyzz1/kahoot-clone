@@ -1,7 +1,11 @@
-import { Form, Input, Select, Button } from "antd";
+import { Form, Input, Select, Button, Upload, message } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
 import { useState, useEffect } from "react";
-import type { Question, QuestionType, Media } from "../../types/global";
 import { v4 as uuidv4 } from "uuid";
+import type { UploadFile } from "antd/es/upload/interface";
+import useAxiosPrivate from "../../../hooks/useAxiosPrivate"; 
+import useSubmitData from "../../../hooks/useSubmitData"; 
+import { useQueryClient } from "@tanstack/react-query";
 
 interface QuestionFormProps {
   quizId: string;
@@ -16,8 +20,63 @@ export default function QuestionForm({
 }: QuestionFormProps) {
   const [form] = Form.useForm();
   const [questionType, setQuestionType] = useState<QuestionType>("multiple_choice");
+  const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
+  const [videoUrl, setVideoUrl] = useState<string | undefined>(undefined);
+  const axiosPrivateUpload = useAxiosPrivate({ type: "upload" });
+  const queryClient = useQueryClient();
 
-  // Custom validator for positive numbers
+  const { mutate, isPending } = useSubmitData( `/quizzes/${quizId}/questions`, 
+    (data: any) => {
+      message.success(`Question ${editingQuestion ? "updated" : "added"} successfully.`);
+      const newQuestion = data as Question & Partial<{ answerText: string; correctOrder: string[] }>;
+      onAdd(newQuestion);
+      form.resetFields();
+      setQuestionType("multiple_choice");
+      form.setFieldsValue({
+        type: "multiple_choice",
+        timeLimit: 30,
+        content: "",
+        answers: "",
+        correctIndexes: [],
+        answerText: "",
+        correctOrder: "",
+        points: 100
+      });
+      setImageUrl(undefined);
+      setVideoUrl(undefined);
+
+      queryClient.invalidateQueries({ queryKey: ["quizzes"] });
+    },
+    (error: any) => {
+      message.error(`Failed to ${editingQuestion ? "update" : "add"} question: ${error.message}`);
+    }
+  );
+
+  const handleCustomUpload = async (options: any, setFileUrl: (url: string | undefined) => void) => {
+    const { file, onSuccess, onError, onProgress } = options;
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axiosPrivateUpload.post('/upload', formData, {
+        onUploadProgress: (event) => {
+          if (event.total) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            onProgress({ percent });
+          }
+        },
+      });
+
+      const { publicUrl } = response.data;
+      message.success(`${file.name} file uploaded successfully.`);
+      setFileUrl(publicUrl);
+      onSuccess(response.data);
+    } catch (err: any) {
+      message.error(`${file.name} file upload failed: ${err.message}`);
+      onError(err);
+    }
+  };
+
   const positiveNumberValidator = (_: any, value: any) => {
     const numValue = Number(value);
     if (value === undefined || value === null || value === '') {
@@ -31,9 +90,9 @@ export default function QuestionForm({
 
   useEffect(() => {
     if (editingQuestion) {
-      const answerTexts = editingQuestion.answers?.map((a) => a.text) || [];
+      const answerTexts = editingQuestion.options?.map((a) => a.text) || [];
       const correctIndexes =
-        editingQuestion.answers
+        editingQuestion.options
           ?.map((a, i) => (a.isCorrect ? i : -1))
           .filter((i) => i !== -1) || [];
 
@@ -46,10 +105,10 @@ export default function QuestionForm({
         answerText: editingQuestion.answerText,
         correctOrder: editingQuestion.correctOrder?.join("\n"),
         points: editingQuestion.points,
-        imageUrl: editingQuestion.media?.image,
-        videoUrl: editingQuestion.media?.video,
       });
 
+      setImageUrl(editingQuestion.media?.image);
+      setVideoUrl(editingQuestion.media?.video);
       setQuestionType(editingQuestion.type);
     } else {
       form.setFieldsValue({
@@ -61,43 +120,39 @@ export default function QuestionForm({
         answerText: "",
         correctOrder: "",
         points: 100,
-        imageUrl: "",
-        videoUrl: "",
       });
       setQuestionType("multiple_choice");
+      setImageUrl(undefined);
+      setVideoUrl(undefined);
     }
   }, [editingQuestion, form]);
 
   const now = new Date().toISOString();
 
   const onFinish = (values: any) => {
-    const question: Question = {
-      _id: editingQuestion?._id || uuidv4(),
+    const question: any = {
       quizId,
       type: questionType,
       content: values.content,
       timeLimit: Number(values.timeLimit),
       createdAt: editingQuestion?.createdAt || now,
       updatedAt: now,
-      answers: [],
       points: Number(values.points),
-      title: values.content, // Assuming title is the same as content
       options: [],
-      correctAnswer: String(values.correctIndexes || "") ,
     };
 
     const mediaObject: Media = {};
-    if (values.imageUrl && values.imageUrl.trim() !== '') {
-        mediaObject.image = values.imageUrl;
+    if (imageUrl) {
+      mediaObject.image = imageUrl;
     }
-    if (values.videoUrl && values.videoUrl.trim() !== '') {
-        mediaObject.video = values.videoUrl;
+    if (videoUrl) {
+      mediaObject.video = videoUrl;
     }
 
     if (Object.keys(mediaObject).length > 0) {
-        question.media = mediaObject;
+      question.media = mediaObject;
     } else {
-        question.media = undefined;
+      question.media = undefined;
     }
 
     if (questionType === "multiple_choice") {
@@ -105,17 +160,18 @@ export default function QuestionForm({
         .split("\n")
         .filter((line: string) => line.trim() !== "");
 
-      question.answers = answerLines.map((text: string, index: number) => ({
+      question.options = answerLines.map((text: string, index: number) => ({
+        _id: uuidv4(),
         text,
         isCorrect: values.correctIndexes?.includes(index) ?? false,
       }));
     } else if (questionType === "true_false") {
-      question.answers = [
-        { text: "True", isCorrect: values.correctIndexes === 0 },
-        { text: "False", isCorrect: values.correctIndexes === 1 },
+      question.options = [
+        { _id: uuidv4(), text: "True", isCorrect: values.correctIndexes === 0 },
+        { _id: uuidv4(), text: "False", isCorrect: values.correctIndexes === 1 },
       ];
     } else if (questionType === "poll") {
-      question.answers = (values.answers || "")
+      question.options = (values.answers || "")
         .split("\n")
         .filter((line: string) => line.trim() !== "")
         .map((text: string) => ({ text }));
@@ -132,11 +188,17 @@ export default function QuestionForm({
         .filter(Boolean);
     }
 
-    console.log("Question data being added (internal state):", question);
-    onAdd(question);
-    form.resetFields();
-    setQuestionType("multiple_choice");
-    form.setFieldsValue({ type: "multiple_choice", timeLimit: 30, content: "", answers: "", correctIndexes: [], answerText: "", correctOrder: "", points: 100, imageUrl: "", videoUrl: "" });
+    const type = editingQuestion ? "patch" : "post";
+    const endpoint = editingQuestion ? `/quizzes/${quizId}/questions/${editingQuestion._id}` : `/quizzes/${quizId}/questions`;
+    mutate({ data: question, type, endpoint });
+  };
+  
+  const handleRemoveImage = () => {
+    setImageUrl(undefined);
+  };
+  
+  const handleRemoveVideo = () => {
+    setVideoUrl(undefined);
   };
 
   return (
@@ -168,12 +230,30 @@ export default function QuestionForm({
         <Input type="number" min={1} placeholder="Enter points for this question" />
       </Form.Item>
 
-      <Form.Item label="Image URL" name="imageUrl">
-        <Input placeholder="Optional: Enter image URL" />
+      <Form.Item label="Image (optional)">
+        <Upload
+          customRequest={(options) => handleCustomUpload(options, setImageUrl)}
+          listType="picture"
+          accept="image/*"
+          maxCount={1}
+          fileList={imageUrl ? [{ uid: '-1', name: 'image.png', status: 'done', url: imageUrl } as UploadFile] : []}
+          onRemove={handleRemoveImage}
+        >
+          {!imageUrl && <Button icon={<UploadOutlined />}>Upload Image</Button>}
+        </Upload>
       </Form.Item>
 
-      <Form.Item label="Video URL" name="videoUrl">
-        <Input placeholder="Optional: Enter video URL" />
+      <Form.Item label="Video (optional)">
+        <Upload
+          customRequest={(options) => handleCustomUpload(options, setVideoUrl)}
+          listType="picture"
+          accept="video/*"
+          maxCount={1}
+          fileList={videoUrl ? [{ uid: '-1', name: 'video.mp4', status: 'done', url: videoUrl } as UploadFile] : []}
+          onRemove={handleRemoveVideo}
+        >
+          {!videoUrl && <Button icon={<UploadOutlined />}>Upload Video</Button>}
+        </Upload>
       </Form.Item>
 
       {(questionType === "multiple_choice" || questionType === "poll") && (
@@ -252,11 +332,11 @@ export default function QuestionForm({
         rules={[{ required: true, validator: positiveNumberValidator }]}
       >
         <Input type="number" min={5} placeholder="Enter time limit (seconds)" />
-      </Form.Item>
+      </Form.Item>  
 
-      <Button htmlType="submit" type="primary" className="rounded-md shadow-sm hover:shadow-md transition-all">
+      <Button htmlType="submit" type="primary" loading={isPending} className="rounded-md shadow-sm hover:shadow-md transition-all">
         {editingQuestion ? "Update Question" : "Add Question"}
       </Button>
     </Form>
   );
-}
+} 

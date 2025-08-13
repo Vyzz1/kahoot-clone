@@ -7,7 +7,7 @@ const uploadRoute = Router();
 
 uploadRoute.use(validateJWT);
 
-uploadRoute.post("/", upload.single("file"), uploadController.uploadSinlgeFile);
+uploadRoute.post("/", upload.single("file"), uploadController.uploadSingleFile);
 
 uploadRoute.post(
   "/multiple",

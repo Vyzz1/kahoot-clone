@@ -1,25 +1,28 @@
-import { Table, Tag, type TableProps } from "antd";
+import { Table, Tag, type TableProps, Dropdown, Button, Modal } from "antd";
 import { useQuestionFilter } from "../hooks/useQuestionFilter";
-import QuestionForm from "./question-form";
-import DeleteConfirm from "@/components/delete-confirm";
-import type { Question, Pagination } from "@/types/global";
+// import QuestionForm from "./question-form";
+// import DeleteConfirm from "@/components/delete-confirm";
+import { MoreOutlined } from "@ant-design/icons";
 
 interface QuestionTableProps {
   questions: Pagination<Question>;
   isLoading?: boolean;
-  onAdd?: (q: Question) => void;
+  onEdit: (q: Question) => void;
+  onDelete: (id: string) => void;
   quizOptions: { _id: string; title: string }[];
 }
 
 export default function QuestionTable({
   questions,
   isLoading,
-  onAdd,
+  onEdit,
+  onDelete,
   quizOptions,
 }: QuestionTableProps) {
   const { setFilters, page, pageSize, sortBy, sortOrder } = useQuestionFilter();
 
   const columns: TableProps<Question>["columns"] = [
+    // ... (Giữ nguyên các cột STT, Content, Type, Time Limit, QuizId)
     {
       key: "stt",
       title: "STT",
@@ -68,21 +71,39 @@ export default function QuestionTable({
     {
       key: "actions",
       title: "Actions",
-      render: (_, record) => (
-        <div className="flex items-center gap-2">
-          <QuestionForm
-            quizId={record.quizId}
-            editingQuestion={record}
-            onAdd={onAdd || (() => {})}
-            quizOptions={quizOptions}
-          />
-          <DeleteConfirm
-            term={`question "${record.content}"`}
-            endpoint={`/questions/${record._id}`}
-            queryKey={["/questions"]}
-          />
-        </div>
-      ),
+      render: (_, record) => {
+        const items = [
+          { key: "edit", label: "Edit" },
+          {
+            key: "delete",
+            label: <span className="text-red-500">Delete</span>,
+          },
+        ];
+
+        const handleMenuClick = ({ key }: { key: string }) => {
+          if (key === "edit") {
+            onEdit(record);
+          } else if (key === "delete") {
+            Modal.confirm({
+              title: `Are you sure you want to delete question "${
+                record.content || "this question"
+              }"?`,
+              okText: "Yes",
+              okType: "danger",
+              cancelText: "No",
+              onOk: () => onDelete(record._id),
+            });
+          }
+        };
+
+        return (
+          <Dropdown menu={{ items, onClick: handleMenuClick }} trigger={["click"]}>
+            <span>
+              <Button shape="circle" icon={<MoreOutlined />} />
+            </span>
+          </Dropdown>
+        );
+      },
     },
   ];
 

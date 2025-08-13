@@ -358,7 +358,7 @@ class GamePersistService {
     if (!game) {
       throw new DocumentNotFoundError(`Game with ID ${gameId} does not exist.`);
     }
-    return game.quiz.toString(); // Trả về quizId
+    return game.quiz.toString();
   }
 }
 

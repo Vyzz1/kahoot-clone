@@ -1,7 +1,7 @@
 import { useSocket } from "@/hooks/useSocket";
 import Title from "antd/es/typography/Title";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom"; // Import useNavigate
+import { useSearchParams } from "react-router-dom";
 import { message } from "antd";
 import InforJoinForm from "./_components/infor-join-form";
 import PlayerQuestion from "./_components/player-question";

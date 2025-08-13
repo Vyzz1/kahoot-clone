@@ -98,7 +98,6 @@ export default function QuestionListByQuiz() {
               <li key={q._id} className="bg-white p-5 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-start mb-2">
                   <div className="font-bold text-lg text-gray-800">
-                    {/* Hiển thị số thứ tự câu hỏi */}
                     {(data.currentPage * data.pageSize) + index + 1}. {q.content}
                   </div>
                   <Tag color={getColorByType(q.type)} className="ml-2 rounded-full px-3 py-1 text-xs font-semibold">

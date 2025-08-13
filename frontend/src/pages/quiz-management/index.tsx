@@ -5,7 +5,6 @@ import QuizTable from "./_components/quiz-table";
 import SearchQuiz from "./_components/search-quiz";
 import QuizForm from "./_components/quiz-form";
 import { useQuizFilter } from "./hooks/useQuizFilter";
-import type { Pagination, Quiz } from "@/types/global";
 import { useAuth } from "@/hooks/useAuth";
 
 const { Title } = Typography;
@@ -38,7 +37,7 @@ export default function QuizManagement() {
   const endpoint = `/quizzes/my/list?${queryParams}`;
 
   const { data, isLoading, error } = useFetchData<Pagination<Quiz>>(endpoint, {
-    uniqueKey: [`/quizzes/my/list`, getKey()], // dùng chính endpoint làm key
+    uniqueKey: [`/quizzes/my/list`, getKey()], 
     type: "private",
   });
 
@@ -49,7 +48,6 @@ export default function QuizManagement() {
   return (
     <section className="p-0  min-h-screen">
       <div className="max-w-screen-xl mx-auto space-y-8 p-4 md:p-6">
-        {/* Header */}
         <Flex
           justify="space-between"
           align="center"
@@ -77,7 +75,6 @@ export default function QuizManagement() {
           </Flex>
         </Flex>
 
-        {/* Filters */}
         <Flex
           style={{
             padding: "1rem",
@@ -111,8 +108,6 @@ export default function QuizManagement() {
             </Button>
           )}
         </Flex>
-
-        {/* Table or Loading/Error/Empty */}
         <div className="bg-white shadow rounded-xl p-4 min-h-[300px]">
           {isLoading ? (
             <div className="text-center py-16">

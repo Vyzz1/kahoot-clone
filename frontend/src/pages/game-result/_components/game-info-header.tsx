@@ -19,7 +19,7 @@ export default function GameInfoHeader({ gameSession }: GameInfoHeaderProps) {
   const formatDuration = (startedAt: string, finishedAt?: string) => {
     const start = new Date(startedAt);
     const end = finishedAt ? new Date(finishedAt) : new Date();
-    const duration = Math.round((end.getTime() - start.getTime()) / 1000 / 60); // minutes
+    const duration = Math.round((end.getTime() - start.getTime()) / 1000 / 60);
 
     if (duration < 60) {
       return `${duration} minutes`;

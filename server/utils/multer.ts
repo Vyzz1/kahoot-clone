@@ -8,13 +8,8 @@ const fileFilter = (
   cb: FileFilterCallback
 ): void => {
   const allowedExtensions = [
-    ".jpg",
-    ".jpeg",
-    ".gif",
-    ".png",
-    ".avif",
-    ".webp",
-    ".svg",
+    ".jpg", ".jpeg", ".gif", ".png", ".avif", ".webp", ".svg",
+    ".mp4", ".mov", ".avi", ".webm", ".mkv" 
   ];
   const extension = path.extname(file.originalname).toLowerCase();
 
@@ -26,9 +21,10 @@ const fileFilter = (
 };
 
 export const upload = multer({
+  storage: multer.memoryStorage(),
   fileFilter,
   limits: {
     fileSize:
-      (process.env.MAX_FILE_SIZE! as unknown as number) || 5 * 1024 * 1024,
+      (process.env.MAX_FILE_SIZE! as unknown as number) || 50 * 1024 * 1024,
   },
 });
