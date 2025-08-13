@@ -1,4 +1,3 @@
-// Định nghĩa các kiểu chung
 declare type CurrentUserType = {
   avatar: string;
   name: string;
@@ -23,7 +22,6 @@ declare type User = {
   providerId: string;
 };
 
-// Định nghĩa kiểu cho phân trang
 interface Pagination<T> {
   content: T[];
   total: number;
@@ -41,6 +39,8 @@ declare type Quiz = {
   createdAt: string;
   updatedAt: string;
   user: string;
+  questions: Question[];
+  quizTimeLimit?: number;
 };
 
 declare interface Pagination<T> {
@@ -76,34 +76,26 @@ declare interface Question {
   options?: QuestionOption[];
   correctOrder?: string[];
   answerText?: string;
+  createdAt: string;
+  updatedAt: string;
   media?: {
     image?: string;
     video?: string;
   };
   points: number;
+  quizId: string; 
 }
 declare interface Quiz {
   _id: string;
   title: string;
-  description?: string; // Từ global.d.ts nó là tùy chọn, từ types.ts nó là bắt buộc. Giữ là tùy chọn để linh hoạt.
+  description?: string; 
   isPublic: boolean;
   createdAt: string;
   updatedAt: string;
   user: string;
-  questions: Question[]; // Thêm từ global.d.ts và types.ts
-  quizTimeLimit?: number; // Giới hạn thời gian tổng thể cho bài kiểm tra, từ types.ts
+  questions: Question[]; 
+  quizTimeLimit?: number; 
 }
-
-// export interface Question {
-//   _id: string;
-//   title: string;
-//   options: {
-//     id: string;
-//     content: string;
-//   }[];
-//   correctAnswer: string;
-//   content: string;
-// }
 
 declare interface QuizDetail extends Quiz {
   questions: Question[];
@@ -265,4 +257,10 @@ declare interface GameSessionResponse {
     totalPoints: number;
     rank: number;
   };
+}
+
+
+interface Media {
+  image?: string;
+  video?: string;
 }

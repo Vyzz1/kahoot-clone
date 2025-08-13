@@ -1,4 +1,3 @@
-// src/hooks/useQuestionFilter.ts
 import { useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -22,7 +21,7 @@ export function useQuestionFilter() {
   const sortOrder =
     (searchParams.get("sortOrder") as "asc" | "desc") || undefined;
   const type = searchParams.get("type") || "";
-  const quizId = searchParams.get("quizId") || ""; // Lấy quizId từ URL
+  const quizId = searchParams.get("quizId") || "";
 
   const setFilters = useCallback(
     (filters: QuestionFilters) => {
@@ -45,12 +44,12 @@ export function useQuestionFilter() {
   const getParamsString = useCallback(() => {
     const params = new URLSearchParams();
     if (search) params.set("search", search);
-    if (page !== 0) params.set("page", String(page)); // Chỉ thêm nếu khác 0
-    if (pageSize !== 10) params.set("pageSize", String(pageSize)); // Chỉ thêm nếu khác 10
+    if (page !== 0) params.set("page", String(page)); 
+    if (pageSize !== 10) params.set("pageSize", String(pageSize));
     if (sortBy) params.set("sortBy", sortBy);
     if (sortOrder) params.set("sortOrder", sortOrder);
     if (type) params.set("type", type);
-    if (quizId) params.set("quizId", quizId); // Thêm quizId vào params string
+    if (quizId) params.set("quizId", quizId);
 
     return params.toString();
   }, [search, page, pageSize, sortBy, sortOrder, type, quizId]);
@@ -58,7 +57,6 @@ export function useQuestionFilter() {
   const deleteAllFilters = useCallback(() => {
     setSearchParams((prev) => {
       const newParams = new URLSearchParams();
-      // Preserve quizId when resetting filters
       const currentQuizId = prev.get("quizId");
       if (currentQuizId) {
         newParams.set("quizId", currentQuizId);

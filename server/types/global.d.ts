@@ -20,7 +20,6 @@ interface CommonLoginResponse {
   };
 }
 
-// Answer types
 interface AnswerData {
   selectedOptionIndex?: number;
   booleanAnswer?: boolean;

@@ -1,7 +1,8 @@
 import Quiz from "../models/quiz.model";
 import Question from "../models/question.model";
 import { QuizRequest } from "../schemas/quiz.schema";
-import { DocumentNotFoundError, ForbiddenError } from "../error/customError"; // Import ForbiddenError
+import { QuestionRequest } from "../schemas/question.schema";
+import { DocumentNotFoundError, ForbiddenError } from "../error/customError";
 import { PagedResult } from "../config/paged-result";
 
 class QuizService {
@@ -15,28 +16,21 @@ class QuizService {
     return quiz;
   }
 
-  async updateQuiz(id: string, data: QuizRequest, userId: string) { // Thêm userId
-    // Tìm kiếm quiz bằng cả ID và userId để đảm bảo quyền sở hữu
-    const quiz = await Quiz.findOne({ _id: id, user: userId }); 
+  async updateQuiz(id: string, data: QuizRequest, userId: string) {
+    const quiz = await Quiz.findOne({ _id: id, user: userId });
     if (!quiz) {
-      // Nếu không tìm thấy quiz hoặc người dùng không phải chủ sở hữu
       throw new DocumentNotFoundError("Quiz not found or you do not have permission to edit this quiz.");
     }
-    
-    // Cập nhật các trường dữ liệu
     Object.assign(quiz, data);
-    await quiz.save(); // Sử dụng save() thay vì findByIdAndUpdate để kích hoạt middleware (nếu có) và validation
+    await quiz.save();
     return quiz;
   }
 
-  async deleteQuiz(id: string, userId: string) { // Thêm userId
-    // Tìm và xóa quiz bằng cả ID và userId
+  async deleteQuiz(id: string, userId: string) {
     const result = await Quiz.deleteOne({ _id: id, user: userId });
     if (result.deletedCount === 0) {
-      // Nếu không có quiz nào được xóa, có nghĩa là không tìm thấy hoặc không có quyền
       throw new DocumentNotFoundError("Quiz not found or you do not have permission to delete this quiz.");
     }
-    // Xóa tất cả câu hỏi liên quan đến quiz này
     await Question.deleteMany({ quiz: id });
   }
 
@@ -147,9 +141,38 @@ class QuizService {
   }
 
   async getQuestionsByQuizId(quizId: string) {
-  const questions = await Question.find({ quiz: quizId }).sort({ order: 1 });
+  const questions = await Question.find({ quiz: quizId })
+    .populate("quiz", "title")
+    .sort({ order: 1 });
   return questions;
 }
+
+async addQuestionToQuiz(
+    quizId: string,
+    questionData: QuestionRequest,
+    userId: string
+  ) {
+    const quiz = await Quiz.findById(quizId);
+
+    if (!quiz) {
+      throw new DocumentNotFoundError("Quiz not found.");
+    }
+    
+    if (!quiz.user || quiz.user.toString() !== userId) {
+      throw new ForbiddenError("You do not have permission to add questions to this quiz.");
+    }
+
+    const newQuestion = await Question.create({
+      ...questionData,
+      quiz: quizId,
+      user: userId,
+    });
+
+    quiz.questions.push(newQuestion._id);
+    await quiz.save();
+
+    return newQuestion;
+  }
 
 }
 

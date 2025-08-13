@@ -3,8 +3,8 @@ import { TypedRequest } from "../types/express";
 import { QuizRequest } from "../schemas/quiz.schema";
 import quizService from "../services/quiz.service";
 import Question from "../models/question.model";
-import QuizHistory from "../models/quizHistory.model"; // (tùy chọn nếu bạn lưu lịch sử quiz)
-
+import QuizHistory from "../models/quizHistory.model"; 
+import { QuestionRequest } from "../schemas/question.schema";
 class QuizController {
   async createQuiz(req: TypedRequest<{ TBody: QuizRequest }>, res: Response) {
     const quiz = await quizService.createQuiz(req.body, req.user!.userId);
@@ -116,7 +116,7 @@ class QuizController {
     res: Response
   ) {
     try {
-      const questions = await Question.find({ quiz: req.params.id }).sort({ order: 1 });
+      const questions = await quizService.getQuestionsByQuizId(req.params.id);
       res.send(questions);
     } catch (error) {
       res.status(500).json({ message: "Lỗi khi lấy danh sách câu hỏi", error });
@@ -148,6 +148,30 @@ class QuizController {
       res.status(500).send({ message: "Lỗi khi ghi nhận kết quả." });
     }
   }
+async addQuestionToQuiz(
+    req: TypedRequest<{ TParams: { id: string }; TBody: QuestionRequest }>,
+    res: Response
+  ) {
+    const { id: quizId } = req.params;
+    const { userId } = req.user!;
+    const questionData = req.body;
+
+    try {
+      const newQuestion = await quizService.addQuestionToQuiz(
+        quizId,
+        questionData,
+        userId
+      );
+      res.status(201).send(newQuestion);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).send({ message: error.message });
+      } else {
+        res.status(500).send({ message: "Lỗi không xác định khi thêm câu hỏi" });
+      }
+    }
+  }
+  
 }
 
 export default new QuizController();

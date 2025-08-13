@@ -10,15 +10,10 @@ class UploadService {
     });
   }
 
-  private isImageFile(extension: string): boolean {
+  private isAllowedFile(extension: string): boolean {
     const allowedExtensions = [
-      ".jpg",
-      ".jpeg",
-      ".gif",
-      ".png",
-      ".avif",
-      ".webp",
-      ".svg",
+      ".jpg", ".jpeg", ".gif", ".png", ".avif", ".webp", ".svg", 
+      ".mp4", ".mov", ".avi", ".webm", ".mkv" 
     ];
     return allowedExtensions.includes(extension);
   }
@@ -29,7 +24,7 @@ class UploadService {
     }
 
     const extension = path.extname(file.originalname).toLowerCase();
-    if (!extension || !this.isImageFile(extension)) {
+    if (!extension || !this.isAllowedFile(extension)) {
       throw new Error("Invalid file type");
     }
 
@@ -51,7 +46,7 @@ class UploadService {
         }
 
         const extension = path.extname(file.originalname).toLowerCase();
-        if (!extension || !this.isImageFile(extension)) {
+        if (!extension || !this.isAllowedFile(extension)) {
           continue;
         }
 

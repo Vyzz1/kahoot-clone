@@ -3,7 +3,6 @@ import { AuthenticatedRequest } from "../types/express";
 import Quiz from "../models/quiz.model";
 import mongoose from "mongoose";
 
-// Cho phép bất kỳ ai có token đều tạo câu hỏi
 export const validateQuizUsership = async (
   req: AuthenticatedRequest,
   res: Response,

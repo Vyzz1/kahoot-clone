@@ -1,4 +1,3 @@
-// src/controllers/migration.controller.ts
 import { Request, Response } from "express";
 import migrationService from "../services/migration.service";
 import { StatusCodes } from "http-status-codes";
@@ -49,8 +48,8 @@ class MigrationController {
    */
   async runSchemaMigrations(req: Request, res: Response): Promise<void> {
     try {
-      const result = await migrationService.runSchemaMigrations(); // ✅ Lấy kết quả chi tiết
-      res.status(OK).send(result); // ✅ Trả về kết quả chi tiết
+      const result = await migrationService.runSchemaMigrations(); 
+      res.status(OK).send(result); 
     } catch (error) {
       console.error("Error running schema migrations:", error);
       res.status(INTERNAL_SERVER_ERROR).send({

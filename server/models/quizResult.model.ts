@@ -5,7 +5,7 @@ const quizResultSchema = new Schema(
     quiz: { type: Types.ObjectId, ref: "Quiz", required: true },
     user: { type: Types.ObjectId, ref: "User", required: true },
     score: { type: Number, required: true },
-    timeTaken: { type: Number, required: true }, // đơn vị: giây
+    timeTaken: { type: Number, required: true }, 
     submittedAt: { type: Date, default: Date.now },
     answer: [
       {

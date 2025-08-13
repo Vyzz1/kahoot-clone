@@ -1,29 +1,15 @@
-import {
-  Button,
-  Flex,
-  Space,
-  Typography,
-  Spin,
-  Empty,
-  Tag,
-  Table,
-  Dropdown,
-  Modal,
-  Select,
-  message, // Import message for notifications
-} from "antd";
+import { Button,  Flex,  Space,  Typography,  Spin,  Empty,  Tag,  Table,  Dropdown,  Modal,  Select,  message, } from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { MoreOutlined, PlusOutlined } from "@ant-design/icons";
 import useFetchData from "@/hooks/useFetchData";
 import QuestionForm from "./_components/question-form";
 import SearchQuestion from "./_components/search-question";
-import { useDeleteQuestion } from "./hooks/delete-confirm";
+import { useDeleteQuestion } from "./hooks/useDeleteQuestion";
 import { useQuestionFilter } from "./hooks/useQuestionFilter";
-import type { Question, Quiz } from "@/types/global"; // Keep this import for Question type
 import type { TableProps } from "antd";
 import { useState } from "react";
-import type { Pagination } from "@/types/global";
 import { useAuth } from "@/hooks/useAuth";
+
 
 const { Title } = Typography;
 
@@ -39,7 +25,6 @@ export default function QuestionManagement() {
   const quizId = searchParams.get("quizId");
 
   const { getKey } = useAuth();
-  // Fetch questions based on current filters and quizId
   const { data, isLoading, error, refetch } = useFetchData<
     Pagination<Question>
   >(`/questions?${getParamsString()}`, {
@@ -47,7 +32,6 @@ export default function QuestionManagement() {
     uniqueKey: ["/questions", getKey(), getParamsString()],
   });
 
-  // Fetch quizzes for the dropdown in QuestionForm and for displaying quiz title
   const { data: quizData } = useFetchData<Pagination<Quiz>>(
     "/quizzes/my/list",
     {
@@ -61,14 +45,14 @@ export default function QuestionManagement() {
     })) ?? [];
 
   const navigate = useNavigate();
-  const { mutate: deleteQuestionMutate } = useDeleteQuestion(); // Use the delete hook
+  const { mutate: deleteQuestionMutate } = useDeleteQuestion(); 
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
-  // Handlers for adding/editing questions
+
   const handleAdd = () => {
-    refetch(); // Refetch questions after add/edit
+    refetch(); 
     setIsModalOpen(false);
     setEditingQuestion(null);
   };
@@ -83,27 +67,26 @@ export default function QuestionManagement() {
     setEditingQuestion(null);
   };
 
-  // Handle type filter change
+
   const handleTypeFilterChange = (value: string | undefined) => {
-    setFilters({ type: value, page: 0 }); // Reset to first page when filtering
+    setFilters({ type: value, page: 0 }); 
   };
 
-  // Table columns definition
   const columns: TableProps<Question>["columns"] = [
     {
       key: "stt",
       title: "STT",
       render: (_text, _record, index) =>
-        (data?.currentPage ?? 0) * (data?.pageSize ?? 10) + index + 1, // Tính toán STT
+        (data?.currentPage ?? 0) * (data?.pageSize ?? 10) + index + 1, 
     },
     {
-      title: "Title", // Title column
-      dataIndex: "content", // Use 'content' as dataIndex for question title
+      title: "Title", 
+      dataIndex: "content", 
       key: "content",
-      sorter: true, // Enable sorting by title
+      sorter: true, 
     },
     {
-      title: "Type", // Type column
+      title: "Type", 
       dataIndex: "type",
       key: "type",
       render: (type: string) => (
@@ -125,22 +108,22 @@ export default function QuestionManagement() {
       ),
     },
     {
-      title: "Time", // Time Limit column
+      title: "Time", 
       dataIndex: "timeLimit",
       key: "timeLimit",
       render: (t: number) => `${t}s`,
-      sorter: true, // Enable sorting by time limit
+      sorter: true, 
     },
     {
-      title: "Actions", // Actions column
+      title: "Actions", 
       key: "actions",
       render: (_, record) => {
         const items = [
-          { key: "edit", label: "Edit" }, // Edit option
+          { key: "edit", label: "Edit" }, 
           {
             key: "delete",
             label: <span className="text-red-500">Delete</span>,
-          }, // Delete option
+          }, 
         ];
 
         const handleMenuClick = ({ key }: { key: string }) => {
@@ -149,7 +132,7 @@ export default function QuestionManagement() {
             Modal.confirm({
               title: `Are you sure you want to delete question "${
                 record.content || "this question"
-              }"?`, // Confirmation for deletion
+              }"?`, 
               okText: "Yes",
               okType: "danger",
               cancelText: "No",
@@ -157,7 +140,7 @@ export default function QuestionManagement() {
                 deleteQuestionMutate(record._id, {
                   onSuccess: () => {
                     message.success("Question deleted successfully!");
-                    refetch(); // Refetch after successful deletion
+                    refetch(); 
                   },
                   onError: (err: any) => {
                     const errorMessage =
@@ -177,7 +160,6 @@ export default function QuestionManagement() {
             menu={{ items, onClick: handleMenuClick }}
             trigger={["click"]}
           >
-            {/* The child of Dropdown must be a single React element */}
             <span>
               <Button shape="circle" icon={<MoreOutlined />} />
             </span>
@@ -187,7 +169,6 @@ export default function QuestionManagement() {
     },
   ];
 
-  // Handle table change (pagination, sorting, filtering)
   const onChange: TableProps<Question>["onChange"] = (
     pagination,
     _filters,
@@ -254,7 +235,7 @@ export default function QuestionManagement() {
             style={{ width: 180 }}
             onChange={handleTypeFilterChange}
             allowClear
-            value={type || undefined} // Control value from searchParams
+            value={type || undefined} 
           >
             <Select.Option value="multiple_choice">
               Multiple Choice
@@ -286,12 +267,12 @@ export default function QuestionManagement() {
               columns={columns}
               dataSource={data.content}
               pagination={{
-                total: data?.totalCount ?? 0, // FIXED: Use data.totalCount
-                current: (data?.currentPage ?? 0) + 1, // Use data.currentPage from fetched data
-                pageSize: data?.pageSize ?? 10, // Use data.pageSize from fetched data
-                showSizeChanger: true, // Hiển thị tùy chọn thay đổi kích thước trang
+                total: data?.totalCount ?? 0, 
+                current: (data?.currentPage ?? 0) + 1, 
+                pageSize: data?.pageSize ?? 10, 
+                showSizeChanger: true, 
                 showTotal: (total, range) =>
-                  `${range[0]}-${range[1]} of ${total} items`, // Hiển thị tổng số mục
+                  `${range[0]}-${range[1]} of ${total} items`,
               }}
               onChange={onChange}
             />
@@ -305,14 +286,14 @@ export default function QuestionManagement() {
           open={isModalOpen}
           onCancel={handleCancel}
           footer={null}
-          destroyOnHidden={true} // FIXED: Use destroyOnHidden
+          destroyOnHidden={true} 
         >
           <QuestionForm
             quizId={editingQuestion?.quizId || quizId || ""}
-            editingQuestion={editingQuestion} // Pass editingQuestion directly
+            editingQuestion={editingQuestion} 
             onAdd={handleAdd}
             quizOptions={quizOptions}
-            // Removed disabledQuizSelect={!!quizId}
+
           />
         </Modal>
       </div>
