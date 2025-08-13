@@ -118,6 +118,52 @@ class UserService {
     user.isBanned = isBanned;
     await user.save();
   }
+
+  async findOrCreateOAuthUser(
+    email: string,
+    fullName: string,
+    avatar: string | null,
+    provider: string,
+    providerId: string
+  ): Promise<UserDocument> {
+    let user = await User.findByEmail(email);
+
+    if (user) {
+      let shouldUpdate = false;
+
+      if (user.fullName !== fullName) {
+        user.fullName = fullName;
+        shouldUpdate = true;
+      }
+
+      if (avatar && user.avatar !== avatar) {
+        user.avatar = avatar;
+        shouldUpdate = true;
+      }
+
+      user.lastLogin = new Date();
+      shouldUpdate = true;
+
+      if (shouldUpdate) {
+        await user.save();
+      }
+
+      return user;
+    } else {
+      const newUser = await User.create({
+        email,
+        fullName,
+        avatar,
+        provider,
+        providerId,
+        role: "user",
+        lastLogin: new Date(),
+        password: undefined,
+      });
+
+      return newUser;
+    }
+  }
 }
 
 export default new UserService();

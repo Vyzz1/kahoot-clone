@@ -6,6 +6,7 @@ import QuizBuilder from "@/pages/quiz-builder";
 import MigrationPage from "@/pages/MigrationPage/MigrationPage";
 import GameHostedPage from "@/pages/game-hosted";
 import GamePlayedPage from "@/pages/game-played";
+import ChangePasswordPage from "@/pages/change-password";
 
 export const adminOnlyRoutes: RouteObject[] = [
   {
@@ -38,6 +39,10 @@ export const settingsRoutes: RouteObject[] = [
   {
     path: "game-played",
     element: <GamePlayedPage />,
+  },
+  {
+    path: "change-password",
+    element: <ChangePasswordPage />,
   },
 ];
 

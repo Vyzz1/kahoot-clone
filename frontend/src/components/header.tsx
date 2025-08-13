@@ -1,6 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import useLogout from "@/hooks/useLogout";
 import { Button, Dropdown, Menu } from "antd";
 import {
   UserOutlined,
@@ -11,10 +10,11 @@ import {
   DownOutlined,
 } from "@ant-design/icons";
 import { useState } from "react";
+import useBtnLogout from "@/hooks/useBtnLogout";
 
 function Header() {
   const { currentUser } = useAuth();
-  const logout = useLogout();
+  const logout = useBtnLogout();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 

@@ -23,6 +23,8 @@ export default function LoginPage() {
 
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
   const onFinish = async (values: RegisterField) => {
     try {
       setLoading(true);
@@ -49,6 +51,25 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    try {
+      setGoogleLoading(true);
+      const response = await axios.get("/oauth/googleLogin");
+
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+      } else {
+        message.error("Failed to get Google login URL");
+      }
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message ||
+        "Google login failed. Please try again.";
+      message.error(errorMessage);
+      setGoogleLoading(false);
+    }
+  };
+
   return (
     <section className="px-4 py-6">
       <div className="max-w-md mx-auto">
@@ -57,13 +78,28 @@ export default function LoginPage() {
             Login to your account
           </Title>
 
+          <div className="text-center mb-4">
+            <p className="text-gray-600">Sign in with your social account</p>
+          </div>
+
           <div className="grid grid-cols-2 gap-4 mt-8">
-            <Button htmlType="button">
+            <Button
+              htmlType="button"
+              loading={googleLoading}
+              onClick={handleGoogleLogin}
+              className="flex items-center justify-center"
+            >
               <GoogleOutlined />
+              {googleLoading ? " Connecting..." : " Google"}
             </Button>
 
-            <Button htmlType="button" className="bg-blue-600 text-white">
+            <Button
+              htmlType="button"
+              className="bg-blue-600 text-white flex items-center justify-center"
+              disabled
+            >
               <FacebookOutlined />
+              Facebook
             </Button>
           </div>
           <div className="my-4 flex items-center justify-center gap-4">
@@ -97,11 +133,12 @@ export default function LoginPage() {
 
             <Button
               loading={loading}
+              disabled={googleLoading}
               style={{ width: "100%" }}
               type="primary"
               htmlType="submit"
             >
-              Login
+              {loading ? "Signing in..." : "Login"}
             </Button>
           </Form>
           <div className="mt-4">

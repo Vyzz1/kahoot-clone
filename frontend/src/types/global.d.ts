@@ -1,7 +1,7 @@
 declare type CurrentUserType = {
-  photoUrl: string;
+  avatar: string;
   name: string;
-  id: number;
+  _id: string;
   role: string;
 
   fullName: string;
